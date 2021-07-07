@@ -1,1 +1,0 @@
-{"header": {"api": "2.0", "dt": "2021-07-07T10:59:03+0300", "latency": 0, "route": "/api/v2/order/get-depart-token?depart+number=100149&token=020996D1-75CC-16E6-09A0-8D1AE3C4463F", "status": "ok", "errors": []}, "body": {"token": "F76597A1-601F-A732-5D9E-C6F5302A5FA3"}}
