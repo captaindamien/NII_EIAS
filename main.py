@@ -1,25 +1,20 @@
 import requests
 import json
-import os
 import sys
 import datetime
 import configparser
 from os import path
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import *
-from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtCore import QSize
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
 from ui.open_window import Ui_OpenWindow
 from form_window import FormWindow
-from ui.form_window import Ui_FormWindow
+from static import set_text
 
 
-def set_text(form, text):
-    form.setText(text)
-
-
-class main_window(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
-        super(main_window, self).__init__()
+        super(MainWindow, self).__init__()
         self.setFixedSize(522, 295)
         # Инициализация окон
         self.ui = Ui_OpenWindow()
@@ -32,6 +27,7 @@ class main_window(QtWidgets.QMainWindow):
         # Пути до папок
         self.config_dir = path.join(path.dirname(__file__), 'config')
         self.json_dir = path.join(path.dirname(__file__), 'json')
+        self.img_dir = path.join(path.dirname(__file__), 'img')
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
         self.config.read(path.join(self.config_dir, 'config.ini'))
@@ -43,6 +39,11 @@ class main_window(QtWidgets.QMainWindow):
         set_text(self.ui.pushButton, 'Внести данные пациента')
         set_text(self.ui.pushButton_2, 'Просмотреть ранее внесенные данные')
         set_text(self.ui.pushButton_3, 'Отправить отчет в ЕИАС')
+        self.ui.pushButton_3.setStyleSheet("""
+                                           background-color: #b2edbf;
+                                           """)
+        self.ui.pushButton_3.setIcon(QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
+        self.ui.pushButton_3.setIconSize(QSize(35, 35))
 
     # Обработка нажатия для октрытия сторонних окон
     def init_handlers(self):
@@ -57,6 +58,7 @@ class main_window(QtWidgets.QMainWindow):
         with open(path.join(self.config_dir, 'config.ini')) as config:
             all_info = config.read()
 
+    # Отправка данных в API
     def transfer_data(self):
         depart_number = 100149
         token = '020996D1-75CC-16E6-09A0-8D1AE3C4463F'
@@ -99,7 +101,7 @@ class main_window(QtWidgets.QMainWindow):
 app = QtWidgets.QApplication([])
 # Оформление всего приложения
 app.setStyle('Fusion')
-application = main_window()
+application = MainWindow()
 application.show()
 
 sys.exit(app.exec())

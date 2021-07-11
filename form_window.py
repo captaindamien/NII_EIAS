@@ -1,25 +1,9 @@
-import requests
 import json
-import os
-import sys
-import datetime
 import configparser
 from os import path
-from PyQt5.QtCore import Qt, QRegExp
-from PyQt5.QtWidgets import *
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets
 from ui.form_window import Ui_FormWindow
-from PyQt5.QtGui import QRegExpValidator
-
-
-def set_text(form, text):
-    form.setText(text)
-
-
-def validator(form, form_range):
-    serial_regex = QRegExp("^" + form_range)
-    serial_validator = QRegExpValidator(serial_regex)
-    form.setValidator(serial_validator)
+from static import *
 
 
 class FormWindow(QtWidgets.QMainWindow):
@@ -29,39 +13,48 @@ class FormWindow(QtWidgets.QMainWindow):
         # Инициализация окна
         self.ui_2 = Ui_FormWindow()
         self.ui_2.setupUi(self)
+        # Дата в реальном времени
+        self.datetime_now = datetime.datetime.now()
         # Пути до папок
+        self.config_dir = path.join(path.dirname(__file__), 'config')
         self.json_dir = path.join(path.dirname(__file__), 'json')
+        # Открытие файла конфига
+        self.config = configparser.RawConfigParser()
+        self.config.read(path.join(self.config_dir, 'config.ini'))
+        # Метод на чтение конфига
+        self.read_config()
         # Привязка кнопок
         self.ui_2.pushButton.clicked.connect(self.from_form_to_json)
         # Валидации
         validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
                                          "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
-        validator(self.ui_2.lineEdit_17, "(?:[1-2])")
+        validator(self.ui_2.lineEdit_17, "(?:[1-2])")  # Пол
+        validator(self.ui_2.lineEdit_21, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # СНИЛС
+        validator(self.ui_2.lineEdit_23, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # ОМС
+        # Формат даты
+        set_date_format(self.ui_2.dateEdit)
+        set_date_format(self.ui_2.dateEdit_2)
+        set_date_format(self.ui_2.dateEdit_3)
+        set_date_format(self.ui_2.dateEdit_4)
+        # Формат заголовка
+        set_title_font(self.ui_2.label_5)
+        set_title_font(self.ui_2.label_6)
+        set_title_font(self.ui_2.label_15)
+        set_title_font(self.ui_2.label_52)
+        set_title_font(self.ui_2.label_53)
         # Текст по окну
         set_text(self.ui_2.label, 'Название организации-заказчика *')
         set_text(self.ui_2.label_2, 'ОГРН организации-заказчика *')
         set_text(self.ui_2.label_3, 'Дата заказа *')
-        self.ui_2.dateEdit.setCalendarPopup(True)
-        self.ui_2.dateEdit.setDate(datetime.datetime.now())
         set_text(self.ui_2.label_5, 'Информация о заказчике')
-        self.ui_2.label_5.setAlignment(Qt.AlignCenter)
-        self.ui_2.label_5.setStyleSheet("""
-                                      font-weight: 900;
-                                      """)
         set_text(self.ui_2.label_6, 'Информация об услуге')
-        self.ui_2.label_6.setAlignment(Qt.AlignCenter)
-        self.ui_2.label_6.setStyleSheet("""
-                                      font-weight: 900;
-                                      """)
         set_text(self.ui_2.label_8, 'Код заказываемой услуги *')
         set_text(self.ui_2.label_9, 'Название услуги *')
         set_text(self.ui_2.label_7, 'Тип сертифицированной тест-системы')
         set_text(self.ui_2.label_11, 'Дата взятия биоматериала *')
-        self.ui_2.dateEdit_2.setCalendarPopup(True)
-        self.ui_2.dateEdit_2.setDate(datetime.datetime.now())
         set_text(self.ui_2.label_10, 'Дата готовности результата исследования *')
-        self.ui_2.dateEdit_3.setCalendarPopup(True)
-        self.ui_2.dateEdit_3.setDate(datetime.datetime.now())
         set_text(self.ui_2.label_12, 'Результат *')
         self.ui_2.comboBox.addItem('0 - не обнаружено')
         self.ui_2.comboBox.addItem('1 - обнаружено')
@@ -70,17 +63,11 @@ class FormWindow(QtWidgets.QMainWindow):
         set_text(self.ui_2.label_14, 'Тип исследования')
         set_text(self.ui_2.label_13, 'Значение результата')
         set_text(self.ui_2.label_15, 'Информация о пациенте')
-        self.ui_2.label_15.setAlignment(Qt.AlignCenter)
-        self.ui_2.label_15.setStyleSheet("""
-                                      font-weight: 900;
-                                      """)
         set_text(self.ui_2.label_17, 'Фамилия *')
         set_text(self.ui_2.label_18, 'Имя *')
         set_text(self.ui_2.label_16, 'Отчество *')
         set_text(self.ui_2.label_20, 'Пол (1 - муж., 2 - жен.) *')
         set_text(self.ui_2.label_19, 'Дата рождения *')
-        self.ui_2.dateEdit_4.setCalendarPopup(True)
-        self.ui_2.dateEdit_4.setDate(datetime.datetime.now())
         set_text(self.ui_2.label_21, 'Контактный телефон (ввод без 8)')
         set_text(self.ui_2.label_22, 'Адрес электронной почты')
         set_text(self.ui_2.label_23, 'Тип документа удостоверяющего личность *')
@@ -93,10 +80,6 @@ class FormWindow(QtWidgets.QMainWindow):
         set_text(self.ui_2.label_24, 'СНИЛС *')
         set_text(self.ui_2.label_26, 'Полис ОМС *')
         set_text(self.ui_2.label_52, 'Адрес регистрации пациента')
-        self.ui_2.label_52.setAlignment(Qt.AlignCenter)
-        self.ui_2.label_52.setStyleSheet("""
-                                      font-weight: 900;
-                                      """)
         set_text(self.ui_2.label_40, 'Область')
         set_text(self.ui_2.label_41, 'Район')
         set_text(self.ui_2.label_42, 'Город')
@@ -105,10 +88,6 @@ class FormWindow(QtWidgets.QMainWindow):
         set_text(self.ui_2.label_46, 'Строение')
         set_text(self.ui_2.label_44, 'Квартира')
         set_text(self.ui_2.label_53, 'Адрес фактического проживания пациента')
-        self.ui_2.label_53.setAlignment(Qt.AlignCenter)
-        self.ui_2.label_53.setStyleSheet("""
-                                      font-weight: 900;
-                                      """)
         set_text(self.ui_2.label_47, 'Область')
         set_text(self.ui_2.label_48, 'Район')
         set_text(self.ui_2.label_49, 'Город')
@@ -116,6 +95,14 @@ class FormWindow(QtWidgets.QMainWindow):
         set_text(self.ui_2.label_54, 'Дом')
         set_text(self.ui_2.label_55, 'Строение')
         set_text(self.ui_2.label_51, 'Квартира')
+        set_text(self.ui_2.pushButton, 'Подтвердить')
+        self.ui_2.pushButton.setStyleSheet("""
+                                           background-color: #b2edbf;
+                                           """)
+        set_text(self.ui_2.pushButton_3, 'Отмена')
+        self.ui_2.pushButton_3.setStyleSheet("""
+                                                   background-color: #f7c8c8;
+                                                   """)
 
     # Создание уникального номера для отправки
     def generate_unique_number(self):
@@ -123,7 +110,13 @@ class FormWindow(QtWidgets.QMainWindow):
         for section in self.config.sections():
             if self.config.has_option(section, 'transfer_number'):
                 transfer_number = self.config.get(section, 'transfer_number')
-                return f'FBUZ49-{self.datetime_now.strftime("%H:%M:%S-%d.%m.%Y")}-{transfer_number}'
+
+                return f'FBUZ49-{self.datetime_now.strftime("%H:%M:%S-%d.%m.%Y")}-{int(transfer_number) + 1}'
+
+    def save_generate_number(self):
+        with open(path.join(self.config_dir, 'config.ini'), 'w') as config:
+            to_config = self.ui_2.textEdit.toPlainText()
+            config.write(to_config)
 
     def read_json(self):
         with open(path.join(self.json_dir, 'new_test_data.json'), 'r', encoding='utf-8') as json_file:
@@ -139,7 +132,14 @@ class FormWindow(QtWidgets.QMainWindow):
             print(python_json_dict)
             json.dump(f"[{python_json_dict}]", json_file, ensure_ascii=False)
 
+    # Метод на чтение конфига
+    def read_config(self):
+        with open(path.join(self.config_dir, 'config.ini')) as config:
+            all_info = config.read()
+
+    # Передача формы в json
     def from_form_to_json(self):
+        unique_number = self.generate_unique_number()
         organization_name = self.ui_2.lineEdit.text()
         organization_ogrn = self.ui_2.lineEdit_3.text()
         order_date = self.ui_2.dateEdit.text()
@@ -184,6 +184,7 @@ class FormWindow(QtWidgets.QMainWindow):
 
         python_json_dict = self.read_json()
 
+        python_json_dict['order']['number'] = unique_number
         python_json_dict['order']['name'] = organization_name
         python_json_dict['order']['ogrn'] = organization_ogrn
         python_json_dict['order']['orderDate'] = order_date
