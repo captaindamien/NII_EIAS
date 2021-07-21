@@ -24,3 +24,11 @@ def validator(form, form_range):
     serial_regex = QRegExp("^" + form_range)
     serial_validator = QRegExpValidator(serial_regex)
     form.setValidator(serial_validator)
+
+
+def generate_unique_number():
+    return f'FBUZ49-{datetime.datetime.now().strftime("%d-%m-%Y, %H-%M-%S")}'
+
+
+def generate_filename():
+    return f'FBUZ49-{datetime.datetime.now().strftime("%d-%m-%Y")}'

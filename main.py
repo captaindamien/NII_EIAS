@@ -9,7 +9,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
 from ui.open_window import Ui_OpenWindow
 from form_window import FormWindow
-from static import set_text, set_title_font
+from static import set_text, set_title_font, set_date_format, validator, generate_unique_number, generate_filename
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -28,6 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.config_dir = path.join(path.dirname(__file__), 'config')
         self.json_dir = path.join(path.dirname(__file__), 'json')
         self.img_dir = path.join(path.dirname(__file__), 'img')
+        self.result_dir = path.join(path.dirname(__file__), 'result')
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
         self.config.read(path.join(self.config_dir, 'config.ini'))
@@ -58,8 +59,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Получение и отправка данных в API
     def transfer_data(self):
+        filename = generate_filename()
         # Открытие json файла
-        with open(path.join(self.json_dir, 'new_test_data.json'), 'r', encoding='utf-8') as read_file:
+        with open(path.join(self.result_dir, f'{filename}.json'), 'r', encoding='utf-8') as read_file:
             json_file = json.load(read_file)
 
         depart_number = ''

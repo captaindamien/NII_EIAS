@@ -1,9 +1,12 @@
+import os
 import json
+import datetime
 import configparser
 from os import path
 from PyQt5 import QtWidgets
 from ui.form_window import Ui_FormWindow
-from static import *
+from static import set_text, set_title_font, set_date_format, validator, generate_unique_number, generate_filename
+from time import sleep
 
 
 class FormWindow(QtWidgets.QMainWindow):
@@ -24,8 +27,6 @@ class FormWindow(QtWidgets.QMainWindow):
         self.config.read(path.join(self.config_dir, 'config.ini'), encoding='utf-8')
         # Привязка кнопок
         self.ui_2.pushButton.clicked.connect(self.from_form_to_json)
-        # Список на отправку
-        self.list_of_dicts = []
         # Валидации
         validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
                                          "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
@@ -105,33 +106,38 @@ class FormWindow(QtWidgets.QMainWindow):
                                              background-color: #f7c8c8;
                                              """)
 
-    # Создание уникального номера для отправки
-    def generate_unique_number(self):
-        return f'FBUZ49-{self.datetime_now.strftime("%d-%m-%Y, %H-%M-%S")}'
-
     # Чтение json шаблона
     def read_json_template(self):
-        with open(path.join(self.json_dir, 'new_test_data.json'), 'r', encoding='utf-8') as json_file:
+        with open(path.join(self.json_dir, 'template.json'), 'r', encoding='utf-8') as json_file:
             json_data = json.load(json_file)
             python_json_data = json.loads(json_data)
-            python_json_dict = python_json_data[0]  # Получает словарь
 
-            return python_json_dict
+            return python_json_data
+
+    def read_json_today(self):
+        filename = generate_filename()
+        with open(path.join(self.result_dir, f'{filename}.json'), 'r', encoding='utf-8') as json_file:
+            json_data = json.load(json_file)
+            python_json_data = json.loads(json_data)
+
+            return python_json_data
 
     # Создание и запись json файла
     def write_json(self, data):
-        with open(path.join(self.result_dir, f'test.json'), 'w', encoding='utf-8') as json_file:
-            self.list_of_dicts.append(data)
-            python_json = str(self.list_of_dicts).replace("'", '\"')  # Преобразует ковычки к нужному формату
-            print(python_json)
-            json.dump(f"{python_json}", json_file, ensure_ascii=False)
+        filename = generate_filename()
 
-    def json_json(self, data):
-        unique_number = self.generate_unique_number()
-        with open(path.join(self.result_dir, f'{unique_number}.json'), 'w', encoding='utf-8') as json_file:
-            self.list_of_dicts.append(data)
-            python_json = str(self.list_of_dicts).replace("'", '\"')  # Преобразует ковычки к нужному формату
-            print(python_json)
+        if os.path.exists(path.join(self.result_dir, f'{filename}.json')):
+            json_list = self.read_json_today()
+        else:
+            json_list = self.read_json_template()
+
+        with open(path.join(self.result_dir, f'{filename}.json'), 'w', encoding='utf-8') as json_file:
+            if json_list[0]['order']['depart'] != '':
+                json_list.append(data)
+            else:
+                json_list = [data]
+            python_json = str(json_list).replace("'", '\"')  # Преобразует ковычки к нужному формату
+
             json.dump(f"{python_json}", json_file, ensure_ascii=False)
 
     # Передача формы в json
@@ -149,7 +155,7 @@ class FormWindow(QtWidgets.QMainWindow):
                     laboratory_name = self.config.get(section, 'laboratory_name')
                     laboratory_ogrn = self.config.get(section, 'laboratory_ogrn')
 
-        unique_number = self.generate_unique_number()
+        unique_number = generate_unique_number()
         organization_name = self.ui_2.lineEdit.text()
         organization_ogrn = self.ui_2.lineEdit_3.text()
         order_date = self.ui_2.dateEdit.text()
@@ -192,7 +198,13 @@ class FormWindow(QtWidgets.QMainWindow):
         fact_building = self.ui_2.lineEdit_43.text()
         fact_apartment = self.ui_2.lineEdit_42.text()
 
-        python_json_dict = self.read_json_template()
+        filename = generate_filename()
+        if os.path.exists(path.join(self.result_dir, f'{filename}.json')):
+            python_json_dict = self.read_json_today()
+        else:
+            python_json_dict = self.read_json_template()
+
+        python_json_dict = python_json_dict[0]
 
         python_json_dict['order']['depart'] = depart_number
         python_json_dict['order']['laboratoryName'] = laboratory_name
@@ -241,3 +253,5 @@ class FormWindow(QtWidgets.QMainWindow):
         python_json_dict['order']['patient']['address']['factAddress']['streetName'] = fact_street
 
         self.write_json(python_json_dict)
+
+        self.hide()
