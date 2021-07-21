@@ -9,7 +9,7 @@ from static import *
 class FormWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(FormWindow, self).__init__()
-        self.setFixedSize(1260, 790)
+        self.setFixedSize(1260, 750)
         # Инициализация окна
         self.ui_2 = Ui_FormWindow()
         self.ui_2.setupUi(self)
@@ -18,13 +18,14 @@ class FormWindow(QtWidgets.QMainWindow):
         # Пути до папок
         self.config_dir = path.join(path.dirname(__file__), 'config')
         self.json_dir = path.join(path.dirname(__file__), 'json')
+        self.result_dir = path.join(path.dirname(__file__), 'result')
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
-        self.config.read(path.join(self.config_dir, 'config.ini'))
-        # Метод на чтение конфига
-        self.read_config()
+        self.config.read(path.join(self.config_dir, 'config.ini'), encoding='utf-8')
         # Привязка кнопок
         self.ui_2.pushButton.clicked.connect(self.from_form_to_json)
+        # Список на отправку
+        self.list_of_dicts = []
         # Валидации
         validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
                                          "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
@@ -101,24 +102,15 @@ class FormWindow(QtWidgets.QMainWindow):
                                            """)
         set_text(self.ui_2.pushButton_3, 'Отмена')
         self.ui_2.pushButton_3.setStyleSheet("""
-                                                   background-color: #f7c8c8;
-                                                   """)
+                                             background-color: #f7c8c8;
+                                             """)
 
     # Создание уникального номера для отправки
     def generate_unique_number(self):
-        # Чтение конфига config.ini
-        for section in self.config.sections():
-            if self.config.has_option(section, 'transfer_number'):
-                transfer_number = self.config.get(section, 'transfer_number')
+        return f'FBUZ49-{self.datetime_now.strftime("%d-%m-%Y, %H-%M-%S")}'
 
-                return f'FBUZ49-{self.datetime_now.strftime("%H:%M:%S-%d.%m.%Y")}-{int(transfer_number) + 1}'
-
-    def save_generate_number(self):
-        with open(path.join(self.config_dir, 'config.ini'), 'w') as config:
-            to_config = self.ui_2.textEdit.toPlainText()
-            config.write(to_config)
-
-    def read_json(self):
+    # Чтение json шаблона
+    def read_json_template(self):
         with open(path.join(self.json_dir, 'new_test_data.json'), 'r', encoding='utf-8') as json_file:
             json_data = json.load(json_file)
             python_json_data = json.loads(json_data)
@@ -126,19 +118,37 @@ class FormWindow(QtWidgets.QMainWindow):
 
             return python_json_dict
 
+    # Создание и запись json файла
     def write_json(self, data):
-        with open(path.join(self.json_dir, 'new_test_data.json'), 'w', encoding='utf-8') as json_file:
-            python_json_dict = str(data).replace("'", '\"')
-            print(python_json_dict)
-            json.dump(f"[{python_json_dict}]", json_file, ensure_ascii=False)
+        with open(path.join(self.result_dir, f'test.json'), 'w', encoding='utf-8') as json_file:
+            self.list_of_dicts.append(data)
+            python_json = str(self.list_of_dicts).replace("'", '\"')  # Преобразует ковычки к нужному формату
+            print(python_json)
+            json.dump(f"{python_json}", json_file, ensure_ascii=False)
 
-    # Метод на чтение конфига
-    def read_config(self):
-        with open(path.join(self.config_dir, 'config.ini')) as config:
-            all_info = config.read()
+    def json_json(self, data):
+        unique_number = self.generate_unique_number()
+        with open(path.join(self.result_dir, f'{unique_number}.json'), 'w', encoding='utf-8') as json_file:
+            self.list_of_dicts.append(data)
+            python_json = str(self.list_of_dicts).replace("'", '\"')  # Преобразует ковычки к нужному формату
+            print(python_json)
+            json.dump(f"{python_json}", json_file, ensure_ascii=False)
 
     # Передача формы в json
     def from_form_to_json(self):
+        depart_number = ''
+        laboratory_name = ''
+        laboratory_ogrn = ''
+
+        for section in self.config.sections():
+            if self.config.has_section('json_data'):
+                if self.config.has_option(section, 'depart_number')\
+                        and self.config.has_option(section, 'laboratory_name')\
+                        and self.config.has_option(section, 'laboratory_ogrn'):
+                    depart_number = self.config.get(section, 'depart_number')
+                    laboratory_name = self.config.get(section, 'laboratory_name')
+                    laboratory_ogrn = self.config.get(section, 'laboratory_ogrn')
+
         unique_number = self.generate_unique_number()
         organization_name = self.ui_2.lineEdit.text()
         organization_ogrn = self.ui_2.lineEdit_3.text()
@@ -182,15 +192,18 @@ class FormWindow(QtWidgets.QMainWindow):
         fact_building = self.ui_2.lineEdit_43.text()
         fact_apartment = self.ui_2.lineEdit_42.text()
 
-        python_json_dict = self.read_json()
+        python_json_dict = self.read_json_template()
 
+        python_json_dict['order']['depart'] = depart_number
+        python_json_dict['order']['laboratoryName'] = laboratory_name
+        python_json_dict['order']['laboratoryOgrn'] = laboratory_ogrn
         python_json_dict['order']['number'] = unique_number
         python_json_dict['order']['name'] = organization_name
         python_json_dict['order']['ogrn'] = organization_ogrn
         python_json_dict['order']['orderDate'] = order_date
 
         python_json_dict['order']['serv'][0]['code'] = service_code
-        python_json_dict['order']['serv'][0]['Name'] = service_name
+        python_json_dict['order']['serv'][0]['name'] = service_name
         python_json_dict['order']['serv'][0]['testSystem'] = test_system
         python_json_dict['order']['serv'][0]['biomaterDate'] = biomaterial_date
         python_json_dict['order']['serv'][0]['readyDate'] = ready_date

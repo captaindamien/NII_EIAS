@@ -9,13 +9,13 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
 from ui.open_window import Ui_OpenWindow
 from form_window import FormWindow
-from static import set_text
+from static import set_text, set_title_font
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setFixedSize(522, 295)
+        self.setFixedSize(522, 250)
         # Инициализация окон
         self.ui = Ui_OpenWindow()
         self.ui_2 = FormWindow()
@@ -31,13 +31,16 @@ class MainWindow(QtWidgets.QMainWindow):
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
         self.config.read(path.join(self.config_dir, 'config.ini'))
-        # Метод на чтение конфига
-        self.read_config()
         # Привязка кнопок
         self.ui.pushButton_3.clicked.connect(self.transfer_data)
         # Текст по окну
-        set_text(self.ui.pushButton, 'Внести данные пациента')
-        set_text(self.ui.pushButton_2, 'Просмотреть ранее внесенные данные')
+        set_text(self.ui.label, 'Внести данные пациента')
+        set_title_font(self.ui.label)
+        set_text(self.ui.pushButton, 'Вручную')
+        set_text(self.ui.pushButton_4, 'Импорт из эксель файла (Не доступно)')
+        self.ui.pushButton_4.setEnabled(False)
+        set_text(self.ui.pushButton_2, 'Просмотреть ранее внесенные данные (Не доступно)')
+        self.ui.pushButton_2.setEnabled(False)
         set_text(self.ui.pushButton_3, 'Отправить отчет в ЕИАС')
         self.ui.pushButton_3.setStyleSheet("""
                                            background-color: #b2edbf;
@@ -53,15 +56,22 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_form_window(self):
         self.ui_2.show()
 
-    # Метод на чтение конфига
-    def read_config(self):
-        with open(path.join(self.config_dir, 'config.ini')) as config:
-            all_info = config.read()
-
-    # Отправка данных в API
+    # Получение и отправка данных в API
     def transfer_data(self):
-        depart_number = 100149
-        token = '020996D1-75CC-16E6-09A0-8D1AE3C4463F'
+        # Открытие json файла
+        with open(path.join(self.json_dir, 'new_test_data.json'), 'r', encoding='utf-8') as read_file:
+            json_file = json.load(read_file)
+
+        depart_number = ''
+        token = ''
+        # Чтение конфига
+        for section in self.config.sections():
+            if self.config.has_section('json_data'):
+                if self.config.has_option(section, 'depart_number'):
+                    depart_number = self.config.get(section, 'depart_number')
+            if self.config.has_section('transfer_data'):
+                if self.config.has_option(section, 'token'):
+                    token = self.config.get(section, 'token')
 
         login = {'depart number': depart_number,
                  'token': token
@@ -73,10 +83,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         response_json = response.json()
         response_token = response_json['body']['token']
-
-        # Открытие json файла
-        with open(path.join(self.json_dir, 'new_test_data.json'), 'r', encoding='utf-8') as read_file:
-            json_file = json.load(read_file)
 
         # Отправка данных в api
         transfer_info = {'depart number': depart_number,
