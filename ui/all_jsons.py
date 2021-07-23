@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'open_window.ui'
+# Form implementation generated from reading ui file 'all_jsons.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -11,30 +11,27 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_OpenWindow(object):
+class Ui_JsonsWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(522, 295)
+        MainWindow.resize(362, 363)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        self.listView = QtWidgets.QListView(self.centralwidget)
+        self.listView.setGeometry(QtCore.QRect(10, 10, 261, 311))
+        self.listView.setObjectName("listView")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(10, 40, 241, 41))
+        self.pushButton.setGeometry(QtCore.QRect(280, 10, 75, 23))
         self.pushButton.setObjectName("pushButton")
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(10, 110, 501, 41))
+        self.pushButton_2.setGeometry(QtCore.QRect(280, 40, 75, 23))
         self.pushButton_2.setObjectName("pushButton_2")
         self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(10, 180, 501, 41))
+        self.pushButton_3.setGeometry(QtCore.QRect(280, 90, 75, 23))
         self.pushButton_3.setObjectName("pushButton_3")
-        self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_4.setGeometry(QtCore.QRect(270, 40, 241, 41))
-        self.pushButton_4.setObjectName("pushButton_4")
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(10, 20, 501, 16))
-        self.label.setObjectName("label")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 522, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 362, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -50,5 +47,3 @@ class Ui_OpenWindow(object):
         self.pushButton.setText(_translate("MainWindow", "PushButton"))
         self.pushButton_2.setText(_translate("MainWindow", "PushButton"))
         self.pushButton_3.setText(_translate("MainWindow", "PushButton"))
-        self.pushButton_4.setText(_translate("MainWindow", "PushButton"))
-        self.label.setText(_translate("MainWindow", "TextLabel"))
