@@ -3,10 +3,10 @@ import json
 import datetime
 import configparser
 from os import path
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from ui.form_window import Ui_FormWindow
+from base import from_tuple_to_patients_table
 from static import set_text, set_title_font, set_date_format, validator, generate_unique_number, generate_filename
-from time import sleep
 
 
 class FormWindow(QtWidgets.QMainWindow):
@@ -21,12 +21,14 @@ class FormWindow(QtWidgets.QMainWindow):
         # Пути до папок
         self.config_dir = path.join(path.dirname(__file__), 'config')
         self.json_dir = path.join(path.dirname(__file__), 'json')
+        self.img_dir = path.join(path.dirname(__file__), 'img')
         self.result_dir = path.join(path.dirname(__file__), 'result')
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
         self.config.read(path.join(self.config_dir, 'config.ini'), encoding='utf-8')
         # Привязка кнопок
         self.ui_2.pushButton.clicked.connect(self.from_form_to_json)
+        self.ui_2.pushButton_3.clicked.connect(self.close_window)
         # Валидации
         validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
                                          "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
@@ -46,7 +48,10 @@ class FormWindow(QtWidgets.QMainWindow):
         set_title_font(self.ui_2.label_15)
         set_title_font(self.ui_2.label_52)
         set_title_font(self.ui_2.label_53)
+        # Иконка окна
+        self.setWindowIcon(QtGui.QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
         # Текст по окну
+        self.setWindowTitle('Внесение данных вручную')
         set_text(self.ui_2.label, 'Название организации-заказчика *')
         set_text(self.ui_2.label_2, 'ОГРН организации-заказчика *')
         set_text(self.ui_2.label_3, 'Дата заказа *')
@@ -105,6 +110,10 @@ class FormWindow(QtWidgets.QMainWindow):
         self.ui_2.pushButton_3.setStyleSheet("""
                                              background-color: #f7c8c8;
                                              """)
+
+    # Закрытие окна
+    def close_window(self):
+        self.close()
 
     # Чтение json шаблона
     def read_json_template(self):
@@ -252,6 +261,15 @@ class FormWindow(QtWidgets.QMainWindow):
         python_json_dict['order']['patient']['address']['factAddress']['appartament'] = fact_apartment
         python_json_dict['order']['patient']['address']['factAddress']['streetName'] = fact_street
 
-        self.write_json(python_json_dict)
+        patient_list = [organization_name, organization_ogrn, order_date, service_code, service_name, test_system,
+                        biomaterial_date, ready_date, result, service_type, result_value, patient_surname, patient_name,
+                        patient_patronymic, patient_gender, patient_birthday, patient_phone, patient_email,
+                        patient_document_type, patient_document_serial, patient_document_number, patient_snils,
+                        patient_oms, registration_town, registration_house, registration_region, registration_building,
+                        registration_district, registration_apartment, registration_street, fact_town, fact_house,
+                        fact_region, fact_building, fact_district, fact_apartment, fact_street]
 
-        self.hide()
+        self.write_json(python_json_dict)
+        from_tuple_to_patients_table(tuple(patient_list))
+
+        self.close()
