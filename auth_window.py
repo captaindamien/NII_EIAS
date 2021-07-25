@@ -5,6 +5,7 @@ from main import MainWindow
 from static import set_text
 from PyQt5 import QtWidgets, QtGui
 from ui.auth_window import Ui_AuthWindow
+import hashlib
 
 
 class AuthWindow(QtWidgets.QMainWindow):
@@ -43,11 +44,19 @@ class AuthWindow(QtWidgets.QMainWindow):
 
     # Отработка авторизации пользователя
     def user_auth(self):
+        # Чтение данных из таблицы users
         all_users = read_users()
         username = self.ui_4.lineEdit.text()
         password = self.ui_4.lineEdit_2.text()
+
+        # Делает хеш из введенных данных
+        password = password.encode()
+        salt = 'fbuz'.encode()
+        pw_hash = hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
+
+        # Проверка логина и хеша пароля с базой
         for base_row in all_users:
-            if username == base_row[1] and password == base_row[2]:
+            if username == base_row[1] and pw_hash.hex() == base_row[2]:
                 self.show_main_window()
                 break
         else:

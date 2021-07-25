@@ -7,6 +7,8 @@ import requests
 import json
 import configparser
 from static import set_text
+from base import find_transfers_date, find_transfer, success
+from static import generate_filename, generate_unique_number, get_organization
 
 
 class JsonsWindow(QtWidgets.QMainWindow):
@@ -21,20 +23,21 @@ class JsonsWindow(QtWidgets.QMainWindow):
         self.img_dir = path.join(path.dirname(__file__), 'img')
         self.config_dir = path.join(path.dirname(__file__), 'config')
         self.json_dir = path.join(path.dirname(__file__), 'json')
+        self.log_dir = path.join(path.dirname(__file__), 'log')
         # Список всех файлов в папке result
         self.files = os.listdir(self.result_dir)
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
         self.config.read(path.join(self.config_dir, 'config.ini'))
-        # Добавляем только дату из имени файла
-        self.reformat_filename()
+        # Берем имя организации для имени файла
+        self.date = ''
+        self.organization_name = get_organization()
         # Добавление списка в listView
         self.model = QtCore.QStringListModel(self)
-        self.model.setStringList(self.files)
-        self.ui_3.listView.setModel(self.model)
+        self.refresh()
         self.ui_3.listView.setWordWrap(True)
         # Подключение кнопок
-        self.ui_3.pushButton.clicked.connect(self.logging_transfer)
+        self.ui_3.pushButton.clicked.connect(self.create_json)
         self.ui_3.pushButton_2.clicked.connect(self.close_window)
         self.ui_3.pushButton_3.clicked.connect(self.refresh)
         # Иконка окна
@@ -60,14 +63,134 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
     # Обновление списка
     def refresh(self):
-        self.files = os.listdir(self.result_dir)
-        self.reformat_filename()
-        self.model.setStringList(self.files)
+        date_list = find_transfers_date()
+        combo_date_list = []
+        for element in date_list:
+            combo_date_list.append(element[0])
+        self.model.setStringList(list(set(combo_date_list)))
+        self.ui_3.listView.setModel(self.model)
+
+    def get_date_for_transfer(self):
+        return self.ui_3.listView.currentIndex().data()
+
+    # Чтение json шаблона
+    def read_json_template(self):
+        with open(path.join(self.json_dir, 'template.json'), 'r', encoding='utf-8') as json_file:
+            json_data = json.load(json_file)
+            python_json_data = json.loads(json_data)
+
+            return python_json_data
+
+    def read_json_today(self):
+        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8') as json_file:
+            json_data = json.load(json_file)
+            python_json_data = json.loads(json_data)
+
+            return python_json_data
+
+    # Создание и запись json файла
+    def write_json(self, data):
+        if os.path.exists(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
+            json_list = self.read_json_today()
+        else:
+            json_list = self.read_json_template()
+
+        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'w', encoding='utf-8') as json_file:
+            if json_list[0]['order']['depart'] != '':
+                json_list.append(data)
+            else:
+                json_list = [data]
+            python_json = str(json_list).replace("'", '\"')  # Преобразует ковычки к нужному формату
+
+            json.dump(f"{python_json}", json_file, ensure_ascii=False)
+
+    def create_json(self):
+        self.date += self.get_date_for_transfer()
+
+        depart_number = ''
+        laboratory_name = ''
+        laboratory_ogrn = ''
+
+        for section in self.config.sections():
+            if self.config.has_section('json_data'):
+                if self.config.has_option(section, 'depart_number')\
+                        and self.config.has_option(section, 'laboratory_name')\
+                        and self.config.has_option(section, 'laboratory_ogrn'):
+                    depart_number = self.config.get(section, 'depart_number')
+                    laboratory_name = self.config.get(section, 'laboratory_name')
+                    laboratory_ogrn = self.config.get(section, 'laboratory_ogrn')
+
+        if os.path.exists(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
+            python_json_dict = self.read_json_today()
+        else:
+            python_json_dict = self.read_json_template()
+
+        python_json_dict = python_json_dict[0]
+        date = self.get_date_for_transfer()
+        transfer_list = find_transfer(date)
+
+        if not transfer_list:
+            python_json_dict['order']['patient']['surname'] = 'В базе '
+            python_json_dict['order']['patient']['name'] = 'нет пациентов '
+            python_json_dict['order']['patient']['patronymic'] = 'для отправки'
+            self.write_json(python_json_dict)
+
+        for el in range(len(transfer_list)):
+            unique_number = generate_unique_number()
+
+            python_json_dict['order']['number'] = unique_number
+            python_json_dict['order']['depart'] = depart_number
+            python_json_dict['order']['laboratoryName'] = laboratory_name
+            python_json_dict['order']['laboratoryOgrn'] = laboratory_ogrn
+            python_json_dict['order']['name'] = transfer_list[el][2]
+            python_json_dict['order']['ogrn'] = transfer_list[el][3]
+            python_json_dict['order']['orderDate'] = transfer_list[el][4]
+
+            python_json_dict['order']['serv'][0]['code'] = transfer_list[el][5]
+            python_json_dict['order']['serv'][0]['name'] = transfer_list[el][6]
+            python_json_dict['order']['serv'][0]['testSystem'] = transfer_list[el][7]
+            python_json_dict['order']['serv'][0]['biomaterDate'] = transfer_list[el][8]
+            python_json_dict['order']['serv'][0]['readyDate'] = transfer_list[el][9]
+            python_json_dict['order']['serv'][0]['result'] = transfer_list[el][10][0]
+            python_json_dict['order']['serv'][0]['type'] = transfer_list[el][11][0]
+            python_json_dict['order']['serv'][0]['value'] = transfer_list[el][12]
+
+            python_json_dict['order']['patient']['surname'] = transfer_list[el][13]
+            python_json_dict['order']['patient']['name'] = transfer_list[el][14]
+            python_json_dict['order']['patient']['patronymic'] = transfer_list[el][15]
+            python_json_dict['order']['patient']['gender'] = transfer_list[el][16]
+            python_json_dict['order']['patient']['birthday'] = transfer_list[el][17]
+            python_json_dict['order']['patient']['phone'] = transfer_list[el][18]
+            python_json_dict['order']['patient']['email'] = transfer_list[el][19]
+            python_json_dict['order']['patient']['documentType'] = transfer_list[el][20]
+            python_json_dict['order']['patient']['documentNumber'] = transfer_list[el][22]
+            python_json_dict['order']['patient']['documentSerNumber'] = transfer_list[el][21]
+            python_json_dict['order']['patient']['snils'] = transfer_list[el][23]
+            python_json_dict['order']['patient']['oms'] = transfer_list[el][24]
+
+            python_json_dict['order']['patient']['address']['regAddress']['town'] = transfer_list[el][25]
+            python_json_dict['order']['patient']['address']['regAddress']['house'] = transfer_list[el][26]
+            python_json_dict['order']['patient']['address']['regAddress']['region'] = transfer_list[el][27]
+            python_json_dict['order']['patient']['address']['regAddress']['building'] = transfer_list[el][28]
+            python_json_dict['order']['patient']['address']['regAddress']['district'] = transfer_list[el][29]
+            python_json_dict['order']['patient']['address']['regAddress']['appartament'] = transfer_list[el][30]
+            python_json_dict['order']['patient']['address']['regAddress']['streetName'] = transfer_list[el][31]
+
+            python_json_dict['order']['patient']['address']['factAddress']['town'] = transfer_list[el][32]
+            python_json_dict['order']['patient']['address']['factAddress']['house'] = transfer_list[el][33]
+            python_json_dict['order']['patient']['address']['factAddress']['region'] = transfer_list[el][34]
+            python_json_dict['order']['patient']['address']['factAddress']['building'] = transfer_list[el][35]
+            python_json_dict['order']['patient']['address']['factAddress']['district'] = transfer_list[el][36]
+            python_json_dict['order']['patient']['address']['factAddress']['appartament'] = transfer_list[el][37]
+            python_json_dict['order']['patient']['address']['factAddress']['streetName'] = transfer_list[el][38]
+
+            self.write_json(python_json_dict)
+
+        self.logging_transfer()
 
     def logging_transfer(self):
-        date = self.get_date_for_transfer()
         # Открытие json файла
-        with open(path.join(self.result_dir, f'FBUZ49-{date}.json'), 'r', encoding='utf-8') as read_file:
+        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8') as read_file:
             json_file = json.load(read_file)
             python_json = json.loads(json_file)
 
@@ -81,36 +204,49 @@ class JsonsWindow(QtWidgets.QMainWindow):
             patient_list.append(patient)
 
         transfer_json = self.transfer_data()
+        status_list = []
 
+        # Передача статусов в лог
+        with open(path.join(self.log_dir, 'console_log.txt'), 'a') as log_file:
+            log_file.write(f'{str(transfer_json)}\n\n')
+
+        date = self.get_date_for_transfer()
+        transfer_list = find_transfer(date)
+        print(transfer_list)
         # Добавление ошибок
-        for elements in range(len(patient_list)):
+        for elements in range(len(transfer_list)):
             if transfer_json['body'][int(elements)]['status'] == 'error':
                 # Вставка элементов в каждый 2
                 patient_list.insert(elements * 3 + 1, f"{transfer_json['body'][int(elements)]['message']}")
                 # Вставка элементов в каждый 3
                 patient_list.insert(elements * 3 + 2, '-----------------------------------------------')
+
+                status_list.append('error')
             elif transfer_json['body'][int(elements)]['status'] == 'ok'\
                     or transfer_json['body'][int(elements)]['status'] == '':
                 patient_list.insert(elements * 3 + 1, f"Успешно!")
                 patient_list.insert(elements * 3 + 2, '-----------------------------------------------')
 
+                status_list.append('ok')
+
+        for elem in range(len(status_list)):
+            if status_list[elem] == 'ok':
+                success(transfer_list[elem][0], 1)
+
         self.model.setStringList(patient_list)
 
-    # Добавляем только дату из имени файла
-    def reformat_filename(self):
-        for el in range(len(self.files)):
-            new_el = re.search(r'-\d\d-\d\d-\d\d\d\d', self.files[el])
-            new_el = new_el[0][1:]
-            self.files[el] = new_el
+        if 'error' in status_list:
+            if os.path.isfile(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
+                os.remove(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'))
 
-    def get_date_for_transfer(self):
-        return self.ui_3.listView.currentIndex().data()
+        self.date = ''
 
     # Получение и отправка данных в API
     def transfer_data(self):
         date = self.get_date_for_transfer()
+        organization_name = get_organization()
         # Открытие json файла
-        with open(path.join(self.result_dir, f'FBUZ49-{date}.json'), 'r', encoding='utf-8') as read_file:
+        with open(path.join(self.result_dir, f'{organization_name}-{date}.json'), 'r', encoding='utf-8') as read_file:
             json_file = json.load(read_file)
 
         depart_number = ''

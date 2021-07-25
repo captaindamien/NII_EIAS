@@ -30,12 +30,12 @@ class FormWindow(QtWidgets.QMainWindow):
         self.ui_2.pushButton.clicked.connect(self.from_form_to_json)
         self.ui_2.pushButton_3.clicked.connect(self.close_window)
         # Валидации
-        validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+        validator(self.ui_2.lineEdit_11, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
                                          "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
-        validator(self.ui_2.lineEdit_17, "(?:[1-2])")  # Пол
-        validator(self.ui_2.lineEdit_21, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+        validator(self.ui_2.lineEdit_10, "(?:[1-2])")  # Пол
+        validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
                                          "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # СНИЛС
-        validator(self.ui_2.lineEdit_23, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+        validator(self.ui_2.lineEdit_16, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
                                          "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # ОМС
         # Формат даты
         set_date_format(self.ui_2.dateEdit)
@@ -68,6 +68,10 @@ class FormWindow(QtWidgets.QMainWindow):
         self.ui_2.comboBox.addItem('2 - сомнительно')
         self.ui_2.comboBox.addItem('3 - брак')
         set_text(self.ui_2.label_14, 'Тип исследования')
+        self.ui_2.comboBox_2.addItem('1 - ПЦР COVID, качественное')
+        self.ui_2.comboBox_2.addItem('2 - Антитела COVID, качественное IgG')
+        self.ui_2.comboBox_2.addItem('3 - Антитела COVID, качественное IgM')
+        self.ui_2.comboBox_2.addItem('4 - Антитела COVID, суммарное значение IgG и IgM')
         set_text(self.ui_2.label_13, 'Значение результата')
         set_text(self.ui_2.label_15, 'Информация о пациенте')
         set_text(self.ui_2.label_17, 'Фамилия *')
@@ -78,10 +82,10 @@ class FormWindow(QtWidgets.QMainWindow):
         set_text(self.ui_2.label_21, 'Контактный телефон (ввод без 8)')
         set_text(self.ui_2.label_22, 'Адрес электронной почты')
         set_text(self.ui_2.label_23, 'Тип документа удостоверяющего личность *')
-        self.ui_2.comboBox_2.addItem('Паспорт гражданина РФ')
-        self.ui_2.comboBox_2.addItem('Свидетельство о рождении')
-        self.ui_2.comboBox_2.addItem('Вид на жительство')
-        self.ui_2.comboBox_2.addItem('Заграничный паспорт')
+        self.ui_2.comboBox_3.addItem('Паспорт гражданина РФ')
+        self.ui_2.comboBox_3.addItem('Свидетельство о рождении')
+        self.ui_2.comboBox_3.addItem('Вид на жительство')
+        self.ui_2.comboBox_3.addItem('Заграничный паспорт')
         set_text(self.ui_2.label_27, 'Серия документа удостоверяющего личность *')
         set_text(self.ui_2.label_25, 'Номер документа удостоверяющего личность *')
         set_text(self.ui_2.label_24, 'СНИЛС *')
@@ -151,125 +155,59 @@ class FormWindow(QtWidgets.QMainWindow):
 
     # Передача формы в json
     def from_form_to_json(self):
-        depart_number = ''
-        laboratory_name = ''
-        laboratory_ogrn = ''
-
-        for section in self.config.sections():
-            if self.config.has_section('json_data'):
-                if self.config.has_option(section, 'depart_number')\
-                        and self.config.has_option(section, 'laboratory_name')\
-                        and self.config.has_option(section, 'laboratory_ogrn'):
-                    depart_number = self.config.get(section, 'depart_number')
-                    laboratory_name = self.config.get(section, 'laboratory_name')
-                    laboratory_ogrn = self.config.get(section, 'laboratory_ogrn')
-
-        unique_number = generate_unique_number()
         organization_name = self.ui_2.lineEdit.text()
-        organization_ogrn = self.ui_2.lineEdit_3.text()
+        organization_ogrn = self.ui_2.lineEdit_2.text()
         order_date = self.ui_2.dateEdit.text()
 
-        service_code = self.ui_2.lineEdit_2.text()
-        service_name = self.ui_2.lineEdit_7.text()
-        test_system = self.ui_2.lineEdit_6.text()
+        service_code = self.ui_2.lineEdit_3.text()
+        service_name = self.ui_2.lineEdit_4.text()
+        test_system = self.ui_2.lineEdit_5.text()
         biomaterial_date = self.ui_2.dateEdit_2.text()
         ready_date = self.ui_2.dateEdit_3.text()
         result = self.ui_2.comboBox.currentText()
-        service_type = self.ui_2.lineEdit_12.text()
-        result_value = self.ui_2.lineEdit_11.text()
+        service_type = self.ui_2.comboBox_2.currentText()
+        result_value = self.ui_2.lineEdit_6.text()
 
-        patient_surname = self.ui_2.lineEdit_10.text()
-        patient_name = self.ui_2.lineEdit_14.text()
-        patient_patronymic = self.ui_2.lineEdit_13.text()
-        patient_gender = self.ui_2.lineEdit_17.text()
+        patient_surname = self.ui_2.lineEdit_7.text()
+        patient_name = self.ui_2.lineEdit_8.text()
+        patient_patronymic = self.ui_2.lineEdit_9.text()
+        patient_gender = self.ui_2.lineEdit_10.text()
         patient_birthday = self.ui_2.dateEdit_4.text()
-        patient_phone = self.ui_2.lineEdit_15.text()
-        patient_email = self.ui_2.lineEdit_18.text()
-        patient_document_type = self.ui_2.comboBox_2.currentText()
-        patient_document_serial = self.ui_2.lineEdit_22.text()
-        patient_document_number = self.ui_2.lineEdit_20.text()
-        patient_snils = self.ui_2.lineEdit_21.text()
-        patient_oms = self.ui_2.lineEdit_23.text()
+        patient_phone = self.ui_2.lineEdit_11.text()
+        patient_email = self.ui_2.lineEdit_12.text()
+        patient_document_type = self.ui_2.comboBox_3.currentText()
+        patient_document_serial = self.ui_2.lineEdit_13.text()
+        patient_document_number = self.ui_2.lineEdit_14.text()
+        patient_snils = self.ui_2.lineEdit_15.text()
+        patient_oms = self.ui_2.lineEdit_16.text()
 
-        registration_region = self.ui_2.textEdit.toPlainText()
-        registration_district = self.ui_2.textEdit_4.toPlainText()
-        registration_town = self.ui_2.lineEdit_36.text()
-        registration_street = self.ui_2.textEdit_5.toPlainText()
-        registration_house = self.ui_2.lineEdit_37.text()
-        registration_building = self.ui_2.lineEdit_41.text()
-        registration_apartment = self.ui_2.lineEdit_38.text()
+        registration_region = self.ui_2.lineEdit_17.text()
+        registration_district = self.ui_2.lineEdit_18.text()
+        registration_town = self.ui_2.lineEdit_19.text()
+        registration_street = self.ui_2.lineEdit_20.text()
+        registration_house = self.ui_2.lineEdit_21.text()
+        registration_building = self.ui_2.lineEdit_22.text()
+        registration_apartment = self.ui_2.lineEdit_23.text()
 
-        fact_region = self.ui_2.textEdit_2.toPlainText()
-        fact_district = self.ui_2.textEdit_6.toPlainText()
-        fact_town = self.ui_2.lineEdit_39.text()
-        fact_street = self.ui_2.textEdit_7.toPlainText()
-        fact_house = self.ui_2.lineEdit_40.text()
-        fact_building = self.ui_2.lineEdit_43.text()
-        fact_apartment = self.ui_2.lineEdit_42.text()
+        fact_region = self.ui_2.lineEdit_24.text()
+        fact_district = self.ui_2.lineEdit_25.text()
+        fact_town = self.ui_2.lineEdit_26.text()
+        fact_street = self.ui_2.lineEdit_27.text()
+        fact_house = self.ui_2.lineEdit_28.text()
+        fact_building = self.ui_2.lineEdit_29.text()
+        fact_apartment = self.ui_2.lineEdit_30.text()
 
-        filename = generate_filename()
-        if os.path.exists(path.join(self.result_dir, f'{filename}.json')):
-            python_json_dict = self.read_json_today()
-        else:
-            python_json_dict = self.read_json_template()
+        success = 0
+        date = self.datetime_now.strftime("%d-%m-%Y")
 
-        python_json_dict = python_json_dict[0]
-
-        python_json_dict['order']['depart'] = depart_number
-        python_json_dict['order']['laboratoryName'] = laboratory_name
-        python_json_dict['order']['laboratoryOgrn'] = laboratory_ogrn
-        python_json_dict['order']['number'] = unique_number
-        python_json_dict['order']['name'] = organization_name
-        python_json_dict['order']['ogrn'] = organization_ogrn
-        python_json_dict['order']['orderDate'] = order_date
-
-        python_json_dict['order']['serv'][0]['code'] = service_code
-        python_json_dict['order']['serv'][0]['name'] = service_name
-        python_json_dict['order']['serv'][0]['testSystem'] = test_system
-        python_json_dict['order']['serv'][0]['biomaterDate'] = biomaterial_date
-        python_json_dict['order']['serv'][0]['readyDate'] = ready_date
-        python_json_dict['order']['serv'][0]['result'] = result[0]
-        python_json_dict['order']['serv'][0]['type'] = service_type
-        python_json_dict['order']['serv'][0]['value'] = result_value
-
-        python_json_dict['order']['patient']['surname'] = patient_surname
-        python_json_dict['order']['patient']['name'] = patient_name
-        python_json_dict['order']['patient']['patronymic'] = patient_patronymic
-        python_json_dict['order']['patient']['gender'] = patient_gender
-        python_json_dict['order']['patient']['birthday'] = patient_birthday
-        python_json_dict['order']['patient']['phone'] = patient_phone
-        python_json_dict['order']['patient']['email'] = patient_email
-        python_json_dict['order']['patient']['documentType'] = patient_document_type
-        python_json_dict['order']['patient']['documentNumber'] = patient_document_number
-        python_json_dict['order']['patient']['documentSerNumber'] = patient_document_serial
-        python_json_dict['order']['patient']['snils'] = patient_snils
-        python_json_dict['order']['patient']['oms'] = patient_oms
-
-        python_json_dict['order']['patient']['address']['regAddress']['town'] = registration_town
-        python_json_dict['order']['patient']['address']['regAddress']['house'] = registration_house
-        python_json_dict['order']['patient']['address']['regAddress']['region'] = registration_region
-        python_json_dict['order']['patient']['address']['regAddress']['building'] = registration_building
-        python_json_dict['order']['patient']['address']['regAddress']['district'] = registration_district
-        python_json_dict['order']['patient']['address']['regAddress']['appartament'] = registration_apartment
-        python_json_dict['order']['patient']['address']['regAddress']['streetName'] = registration_street
-
-        python_json_dict['order']['patient']['address']['factAddress']['town'] = fact_town
-        python_json_dict['order']['patient']['address']['factAddress']['house'] = fact_house
-        python_json_dict['order']['patient']['address']['factAddress']['region'] = fact_region
-        python_json_dict['order']['patient']['address']['factAddress']['building'] = fact_building
-        python_json_dict['order']['patient']['address']['factAddress']['district'] = fact_district
-        python_json_dict['order']['patient']['address']['factAddress']['appartament'] = fact_apartment
-        python_json_dict['order']['patient']['address']['factAddress']['streetName'] = fact_street
-
-        patient_list = [organization_name, organization_ogrn, order_date, service_code, service_name, test_system,
+        patient_list = [date, organization_name, organization_ogrn, order_date, service_code, service_name, test_system,
                         biomaterial_date, ready_date, result, service_type, result_value, patient_surname, patient_name,
                         patient_patronymic, patient_gender, patient_birthday, patient_phone, patient_email,
                         patient_document_type, patient_document_serial, patient_document_number, patient_snils,
                         patient_oms, registration_town, registration_house, registration_region, registration_building,
                         registration_district, registration_apartment, registration_street, fact_town, fact_house,
-                        fact_region, fact_building, fact_district, fact_apartment, fact_street]
+                        fact_region, fact_building, fact_district, fact_apartment, fact_street, success]
 
-        self.write_json(python_json_dict)
         from_tuple_to_patients_table(tuple(patient_list))
 
         self.close()
