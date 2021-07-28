@@ -32,7 +32,7 @@ class MainWindow(QtWidgets.QMainWindow):
         set_text(self.ui.pushButton, 'Заполнение формы')
         set_text(self.ui.pushButton_4, 'Импорт из эксель файла (Не доступно)')
         self.ui.pushButton_4.setEnabled(False)
-        set_text(self.ui.pushButton_2, 'Просмотреть ранее внесенные данные')
+        set_text(self.ui.pushButton_2, 'Просмотреть / Изменить ранее внесенные данные')
         set_text(self.ui.pushButton_3, 'Отправить отчет в ЕИАС')
         self.ui.pushButton_3.setStyleSheet("""
                                            background-color: #b2edbf;

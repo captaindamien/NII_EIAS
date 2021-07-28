@@ -253,21 +253,23 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
         depart_number = ''
         token = ''
+        address = ''
         # Чтение конфига
         for section in self.config.sections():
             if self.config.has_section('json_data'):
                 if self.config.has_option(section, 'depart_number'):
                     depart_number = self.config.get(section, 'depart_number')
             if self.config.has_section('transfer_data'):
-                if self.config.has_option(section, 'token'):
+                if self.config.has_option(section, 'token') and self.config.has_option(section, 'address'):
                     token = self.config.get(section, 'token')
+                    address = self.config.get(section, 'address')
 
         login = {'depart number': depart_number,
                  'token': token
                  }
 
         # Получение нового токена
-        response = requests.post('https://result.crie.ru/api/v2/order/get-depart-token',
+        response = requests.post(f'https://{address}/api/v2/order/get-depart-token',
                                  login)
 
         response_json = response.json()
@@ -278,7 +280,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
                          'token': response_token,
                          'json': json_file}
 
-        transfer = requests.post('https://result.crie.ru/api/v2/order/ext-orders-package',
+        transfer = requests.post(f'https://{address}/api/v2/order/ext-orders-package',
                                  transfer_info)
         transfer_json = transfer.json()
 
