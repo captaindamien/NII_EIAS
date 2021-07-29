@@ -2,7 +2,7 @@ import sys
 from os import path
 from base import read_users
 from main import MainWindow
-from static import set_text
+from static import set_text, set_title_font
 from PyQt5 import QtWidgets, QtGui
 from ui.auth_window import Ui_AuthWindow
 import hashlib
@@ -32,6 +32,8 @@ class AuthWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Авторизация')
         set_text(self.ui_4.label, 'Введите имя пользователя')
         set_text(self.ui_4.label_2, 'Введите пароль')
+        set_text(self.ui_4.label_3, '')
+        set_title_font(self.ui_4.label_3)
         set_text(self.ui_4.pushButton, 'Вход')
         self.ui_4.pushButton.setStyleSheet("""
                                            background-color: #b2edbf;
@@ -60,10 +62,10 @@ class AuthWindow(QtWidgets.QMainWindow):
                 self.show_main_window()
                 break
         else:
-            set_text(self.ui_4.pushButton, 'Неверный логин или пароль')
-            self.ui_4.pushButton.setStyleSheet("""
-                                               background-color: #f7c8c8;
-                                               """)
+            set_text(self.ui_4.label_3, 'Неверный логин или пароль')
+            self.ui_4.label_3.setStyleSheet("""
+                                            color: #ed1818;
+                                            """)
 
 
 app = QtWidgets.QApplication([])

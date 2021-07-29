@@ -1,6 +1,7 @@
 import os
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import QAbstractItemView
 from ui.all_jsons import Ui_JsonsWindow
 import requests
 import json
@@ -35,6 +36,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
         self.model = QtCore.QStringListModel(self)
         self.refresh()
         self.ui_3.listView.setWordWrap(True)
+        # Запрет редактирования элементов listView
+        self.ui_3.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # Подключение кнопок
         self.ui_3.pushButton.clicked.connect(self.create_json)
         self.ui_3.pushButton_2.clicked.connect(self.close_window)
@@ -71,6 +74,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
         self.model.setStringList(sorted(combo_date_list, reverse=True))
         self.ui_3.listView.setModel(self.model)
+        self.ui_3.pushButton.setEnabled(True)
 
     def get_date_for_transfer(self):
         return self.ui_3.listView.currentIndex().data()
@@ -84,7 +88,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
             return python_json_data
 
     def read_json_today(self):
-        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8') as json_file:
+        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8')\
+                as json_file:
             json_data = json.load(json_file)
             python_json_data = json.loads(json_data)
 
@@ -193,7 +198,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
     def logging_transfer(self):
         # Открытие json файла
-        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8') as read_file:
+        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8')\
+                as read_file:
             json_file = json.load(read_file)
             python_json = json.loads(json_file)
 
@@ -237,6 +243,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
                 success(transfer_list[elem][0], 1)
 
         self.model.setStringList(patient_list)
+        self.ui_3.pushButton.setEnabled(False)
 
         if os.path.isfile(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
             os.remove(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'))

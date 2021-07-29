@@ -270,3 +270,11 @@
 
 {'name': 'Bad Request', 'message': 'Данный номер ЛПУ 100149 не указан в файле json!', 'code': 0, 'status': 400, 'type': 'yii\\web\\BadRequestHttpException'}
 
+{'header': {'api': '2.0', 'dt': '2021-07-29T06:52:51+0300', 'latency': 15, 'route': '/api/v2/order/ext-orders-package', 'status': 'ok', 'errors': []}, 'body': [{'number': 'FBUZ49-29-07-2021, 14-52-49', 'status': 'error', 'id': None, 'message': 'Необходимо указать значение Код услуги(code), Необходимо указать значение Название услуги(name); Необходимо указать значение Фамилия(surname), Необходимо указать значение Имя(name), Необходимо указать значение Пол(gender)'}]}
+
+{'header': {'api': '2.0', 'dt': '2021-07-29T06:53:34+0300', 'latency': 22, 'route': '/api/v2/order/ext-orders-package', 'status': 'ok', 'errors': []}, 'body': [{'number': 'FBUZ49-29-07-2021, 14-53-33', 'status': 'error', 'id': None, 'message': 'Необходимо указать значение Код услуги(code), Необходимо указать значение Название услуги(name); Необходимо указать значение Фамилия(surname), Необходимо указать значение Имя(name), Необходимо указать значение Пол(gender)'}]}
+
+{'header': {'api': '2.0', 'dt': '2021-07-29T06:53:47+0300', 'latency': 16, 'route': '/api/v2/order/ext-orders-package', 'status': 'ok', 'errors': []}, 'body': [{'number': 'FBUZ49-29-07-2021, 14-53-46', 'status': 'error', 'id': None, 'message': 'Необходимо указать значение Код услуги(code), Необходимо указать значение Название услуги(name); Необходимо указать значение Фамилия(surname), Необходимо указать значение Имя(name), Необходимо указать значение Пол(gender)'}]}
+
+{'header': {'api': '2.0', 'dt': '2021-07-29T07:02:34+0300', 'latency': 16, 'route': '/api/v2/order/ext-orders-package', 'status': 'ok', 'errors': []}, 'body': [{'number': 'FBUZ49-29-07-2021, 15-02-33', 'status': 'error', 'id': None, 'message': 'Необходимо указать значение Код услуги(code), Необходимо указать значение Название услуги(name); Необходимо указать значение Фамилия(surname), Необходимо указать значение Имя(name), Необходимо указать значение Пол(gender)'}]}
+

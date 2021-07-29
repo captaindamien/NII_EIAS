@@ -7,6 +7,8 @@ from form_window import FormWindow
 from transfer_window import JsonsWindow
 from search_window import SearchWindow
 from static import set_text, set_title_font
+from base import find_transfers_date
+from PyQt5.QtWidgets import QComboBox
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -53,5 +55,23 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_all_jsons_window(self):
         self.ui_3.show()
 
+    # Добавление элементов в comboBox окна search_window и отображение его
     def show_search_window(self):
+        date_list = find_transfers_date()
+        combo_date_list = ['Все записи']
+
+        for element in date_list:
+            combo_date_list.append(element[0])
+
+        combo_date_list = set(combo_date_list)
+
+        combo_boxes = self.ui_5.findChildren(QComboBox)
+
+        for item in combo_boxes:
+            item.clear()
+
+        for item in combo_boxes:
+            for element in list(sorted(combo_date_list, reverse=True)):
+                item.addItem(element)
+
         self.ui_5.show()
