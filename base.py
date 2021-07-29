@@ -29,6 +29,18 @@ def add_column():
     cursor.execute("ALTER TABLE patients ADD COLUMN 'success' 'INT'")
 
 
+# Создание пользователя (Запрос из файла base)
+def create_user(login, password):
+    password = password.encode()
+    salt = 'fbuz'.encode()
+    pw_hash = hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
+
+    users = [(login, pw_hash.hex())]
+    cursor.executemany("INSERT INTO users(username, password) VALUES (?, ?);", users)
+
+    connect.commit()
+
+
 # Добавление из формы в базу (Запрос из приложения)
 def from_tuple_to_patients_table(patient_tuple):
     cursor.execute("INSERT INTO patients(date, organization_name, organization_ogrn, order_date, service_code,"
@@ -51,31 +63,19 @@ def success(patient_id, data):
     connect.commit()
 
 
-# Создание пользователя (Запрос из файда base)
-def create_user(login, password):
-    password = password.encode()
-    salt = 'fbuz'.encode()
-    pw_hash = hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
-
-    users = [(login, pw_hash.hex())]
-    cursor.executemany("INSERT INTO users(username, password) VALUES (?, ?);", users)
-
-    connect.commit()
-
-
-# Поиск для логина и пароля
+# Поиск для логина и пароля (Запрос из приложения)
 def read_users():
     cursor.execute("SELECT * FROM users")
     return cursor.fetchall()
 
 
-# Поиск всех пациентов по дате
+# Поиск всех пациентов по дате (Запрос из приложения)
 def find_transfers_date():
     cursor.execute("SELECT date FROM patients")
     return cursor.fetchall()
 
 
-# Поиск ФИО пациентов по определенной дате
+# Поиск ФИО пациентов по определенной дате (Запрос из приложения)
 def find_patients(date):
     sql_select_query = """SELECT userid, patient_surname, patient_name, patient_patronymic, patient_birthday, success
                           FROM patients 
@@ -84,7 +84,7 @@ def find_patients(date):
     return cursor.fetchall()
 
 
-# Поиск ФИО пациентов по определенной дате
+# Поиск ФИО пациентов по определенной дате (Запрос из приложения)
 def find_all_patients():
     sql_select_query = """SELECT userid, patient_surname, patient_name, patient_patronymic, patient_birthday, success
                           FROM patients"""
@@ -92,7 +92,7 @@ def find_all_patients():
     return cursor.fetchall()
 
 
-# Поиск всех не отправленных пациентов по дате
+# Поиск всех не отправленных пациентов по дате (Запрос из приложения)
 def find_transfer(date):
     sql_select_query = """SELECT * FROM patients WHERE success = 0 AND date = ?"""
     cursor.execute(sql_select_query, (date,))

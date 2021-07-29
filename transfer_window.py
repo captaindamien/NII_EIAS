@@ -28,7 +28,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
         self.files = os.listdir(self.result_dir)
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
-        self.config.read(path.join(self.config_dir, 'config.ini'))
+        self.config.read(path.join(self.config_dir, 'config.ini'), encoding='utf-8')
         # Берем имя организации для имени файла
         self.date = ''
         self.organization_name = get_organization()
