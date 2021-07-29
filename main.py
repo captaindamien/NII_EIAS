@@ -30,7 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Иконка окна
         self.setWindowIcon(QtGui.QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
         # Текст по окну
-        self.setWindowTitle('Отправка данных в ЕИАС')
+        self.setWindowTitle('Отправка данных в ЕПГУ')
         set_text(self.ui.label, 'Внести данные пациента')
         set_title_font(self.ui.label)
         set_text(self.ui.label_2, 'v.1.0.0')

@@ -138,8 +138,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
         transfer_list = find_transfer(date)
 
         if not transfer_list:
-            python_json_dict['order']['patient']['surname'] = 'В базе '
-            python_json_dict['order']['patient']['name'] = 'нет пациентов '
+            python_json_dict['order']['patient']['surname'] = 'В базе'
+            python_json_dict['order']['patient']['name'] = 'нет пациентов'
             python_json_dict['order']['patient']['patronymic'] = 'для отправки'
             self.write_json(python_json_dict)
 
@@ -215,13 +215,13 @@ class JsonsWindow(QtWidgets.QMainWindow):
         transfer_json = self.transfer_data()
         status_list = []
 
-        # Передача статусов в лог
-        with open(path.join(self.log_dir, 'console_log.txt'), 'a') as log_file:
-            log_file.write(f'{str(transfer_json)}\n\n')
+        # Передача статусов в лог, если json не пустой
+        if patient_list[0] != 'В базе нет пациентов для отправки':
+            with open(path.join(self.log_dir, 'console_log.txt'), 'a') as log_file:
+                log_file.write(f'{str(transfer_json)}\n\n')
 
         date = self.get_date_for_transfer()
         transfer_list = find_transfer(date)
-        print(transfer_list)
         # Добавление ошибок
         for elements in range(len(transfer_list)):
             if transfer_json['body'][int(elements)]['status'] == 'error':
