@@ -26,7 +26,7 @@ def create_table():
 
 # Добавление колонки (запрос из самого файла base)
 def add_column():
-    cursor.execute("alter table patients add column 'success' 'INT'")
+    cursor.execute("ALTER TABLE patients ADD COLUMN 'success' 'INT'")
 
 
 # Добавление из формы в базу (Запрос из приложения)
@@ -79,24 +79,70 @@ def find_transfers_date():
 
 # Поиск ФИО пациентов по определенной дате
 def find_patients(date):
-    sql_select_query = """select patient_surname, patient_name, patient_patronymic from patients where date = ?"""
+    sql_select_query = """SELECT patient_surname, patient_name, patient_patronymic, patient_birthday FROM patients 
+                          WHERE date = ? """
     cursor.execute(sql_select_query, (date,))
     return cursor.fetchall()
 
 
 # Поиск всех не отправленных пациентов по дате
 def find_transfer(date):
-    sql_select_query = """select * from patients where success = 0 and date = ?"""
+    sql_select_query = """SELECT * FROM patients WHERE success = 0 AND date = ?"""
     cursor.execute(sql_select_query, (date,))
     return cursor.fetchall()
 
 
-def find_patient_info(surname, name, patronymic, date):
-    sql_select_query = """SELECT * FROM patients
-                          WHERE patient_surname = ? and
-                          patient_name = ? and
-                          patient_patronymic = ? and
-                          date = ?
-                          """
-    cursor.execute(sql_select_query, (surname, name, patronymic, date,))
+def find_patient_info(surname, name, patronymic, birthday, date):
+    sql_select_query = """SELECT organization_name, organization_ogrn, order_date, service_code,
+                       service_name, test_system, biomaterial_date, ready_date, result_value, patient_surname,
+                       patient_name, patient_patronymic, patient_gender, patient_birthday, 
+                       patient_phone, patient_email, patient_document_serial, patient_document_number,
+                       patient_snils, patient_oms, registration_region, registration_district, registration_town,
+                       registration_street, registration_house, registration_building, registration_apartment,
+                       fact_region, fact_district, fact_town, fact_street, fact_house, fact_building, fact_apartment
+                       FROM patients
+                       WHERE patient_surname = ? AND
+                             patient_name = ? AND
+                             patient_patronymic = ? AND
+                             patient_birthday = ? AND
+                             date = ?"""
+    cursor.execute(sql_select_query, (surname, name, patronymic, birthday, date,))
+    return cursor.fetchall()
+
+
+def find_patient_combobox_info(surname, name, patronymic, birthday, date):
+    sql_select_query = """SELECT result, service_type, patient_document_type
+                           FROM patients
+                           WHERE patient_surname = ? AND
+                                 patient_name = ? AND
+                                 patient_patronymic = ? AND
+                                 patient_birthday = ? AND
+                                 date = ?"""
+    cursor.execute(sql_select_query, (surname, name, patronymic, birthday, date,))
+    return cursor.fetchall()
+
+
+# Добавление отметки об отправке пациента (Запрос из приложения)
+def update_patient(update_tuple):
+    sqlite_update_query = """UPDATE patients SET organization_name = ?, organization_ogrn = ?, order_date = ?,
+    service_code = ?, service_name = ?, test_system = ?, biomaterial_date = ?, ready_date = ?, result = ?, 
+    service_type = ?, result_value = ?, patient_surname = ?, patient_name = ?, patient_patronymic = ?,
+    patient_gender = ?, patient_birthday = ?, patient_phone = ?, patient_email = ?, patient_document_type = ?,
+    patient_document_serial = ?, patient_document_number = ?, patient_snils = ?, patient_oms = ?, registration_town = ?,
+    registration_house = ?, registration_region = ?, registration_building = ?, registration_district = ?,
+    registration_apartment = ?, registration_street = ?, fact_town = ?, fact_house = ?, fact_region = ?,
+    fact_building = ?, fact_district = ?, fact_apartment = ?, fact_street = ? WHERE userid = ?;"""
+
+    cursor.execute(sqlite_update_query, update_tuple)
+    connect.commit()
+
+
+def find_user_id(surname, name, patronymic, birthday):
+    sql_select_query = """SELECT userid
+                           FROM patients
+                           WHERE patient_surname = ? AND
+                                 patient_name = ? AND
+                                 patient_patronymic = ? AND
+                                 patient_birthday = ?"""
+    cursor.execute(sql_select_query, (surname, name, patronymic, birthday,))
     return cursor.fetchall()

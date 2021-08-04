@@ -1,5 +1,4 @@
 import os
-import re
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
 from ui.all_jsons import Ui_JsonsWindow
@@ -8,7 +7,7 @@ import json
 import configparser
 from static import set_text
 from base import find_transfers_date, find_transfer, success
-from static import generate_filename, generate_unique_number, get_organization
+from static import generate_unique_number, get_organization
 
 
 class JsonsWindow(QtWidgets.QMainWindow):
@@ -67,7 +66,10 @@ class JsonsWindow(QtWidgets.QMainWindow):
         combo_date_list = []
         for element in date_list:
             combo_date_list.append(element[0])
-        self.model.setStringList(list(set(combo_date_list)))
+
+        combo_date_list = set(combo_date_list)
+
+        self.model.setStringList(sorted(combo_date_list, reverse=True))
         self.ui_3.listView.setModel(self.model)
 
     def get_date_for_transfer(self):
@@ -95,7 +97,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
         else:
             json_list = self.read_json_template()
 
-        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'w', encoding='utf-8') as json_file:
+        with open(path.join(self.result_dir,
+                            f'{self.organization_name}-{self.date}.json'), 'w', encoding='utf-8') as json_file:
             if json_list[0]['order']['depart'] != '':
                 json_list.append(data)
             else:
@@ -235,9 +238,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
         self.model.setStringList(patient_list)
 
-        if 'error' in status_list:
-            if os.path.isfile(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
-                os.remove(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'))
+        if os.path.isfile(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
+            os.remove(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'))
 
         self.date = ''
 
