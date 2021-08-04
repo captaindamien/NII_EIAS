@@ -1,10 +1,11 @@
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtWidgets import QLineEdit, QComboBox, QLabel
+from PyQt5.QtWidgets import QLineEdit, QComboBox, QLabel, QAbstractItemView
 from ui.search_window import Ui_SearchWindow
 from error_window import ErrorWindow
-from base import find_transfers_date, find_patients, find_patient_info, find_patient_combobox_info, find_all_patients,\
+from base import find_patients, find_patient_info, find_patient_combobox_info, find_all_patients,\
     delete_patient
+import datetime
 from static import set_text
 from change_window import ChangeWindow
 
@@ -12,35 +13,41 @@ from change_window import ChangeWindow
 class SearchWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(SearchWindow, self).__init__()
-        self.setFixedSize(362, 440)
+        self.setFixedSize(362, 460)
         # Инициализация окон
         self.ui_5 = Ui_SearchWindow()
         self.ui_2 = ChangeWindow()
         self.ui_7 = ErrorWindow()
         self.ui_5.setupUi(self)
-        self.add_combobox()
         # Модель для listView
         self.model = QtCore.QStringListModel(self)
         self.ui_5.listView.setEnabled(False)
         self.ui_5.listView.setWordWrap(True)
+        self.ui_5.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)  # Запрет редактирования элементов listView
         self.ui_5.listView.setStyleSheet("""
                                          background-color: #e0e0e0;
                                          """)
         # Пути до папок
         self.img_dir = path.join(path.dirname(__file__), 'img')
         # Подключение кнопок
-        self.ui_5.pushButton_4.clicked.connect(self.search_result)
+        self.ui_5.pushButton.clicked.connect(self.show_change_window)
         self.ui_5.pushButton_2.clicked.connect(self.close_window)
         self.ui_5.pushButton_3.clicked.connect(self.delete_patient)
-        self.ui_5.pushButton.clicked.connect(self.show_change_window)
+        self.ui_5.pushButton_4.clicked.connect(self.search_result)
+        self.ui_5.pushButton_5.clicked.connect(self.close_window)
+        self.ui_5.radioButton.clicked.connect(self.set_disabled)
+        self.ui_5.radioButton_2.clicked.connect(self.set_enabled)
+        # Radiobutton
+        self.ui_5.radioButton.setChecked(True)
+        self.ui_5.dateEdit.setEnabled(False)
+        # DateEdit
+        self.ui_5.dateEdit.setCalendarPopup(True)
+        self.ui_5.dateEdit.setDate(datetime.datetime.now())
+        self.ui_5.dateEdit.setDisplayFormat("dd-MM-yyyy")
         # Текст по окну
         self.setWindowTitle('Просмотр пациентов в базе')
         self.setWindowIcon(QtGui.QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
         set_text(self.ui_5.label, 'Выберите дату')
-        set_text(self.ui_5.pushButton_4, 'Поиск')
-        self.ui_5.pushButton_4.setStyleSheet("""
-                                             background-color: #d6dfff;
-                                             """)
         set_text(self.ui_5.pushButton, 'Просмотр')
         self.ui_5.pushButton.setStyleSheet("""
                                            background-color: #b2edbf;
@@ -53,6 +60,22 @@ class SearchWindow(QtWidgets.QMainWindow):
         self.ui_5.pushButton_3.setStyleSheet("""
                                              background-color: #c48989;
                                              """)
+        set_text(self.ui_5.pushButton_4, 'Поиск')
+        self.ui_5.pushButton_4.setStyleSheet("""
+                                             background-color: #d6dfff;
+                                             """)
+        set_text(self.ui_5.pushButton_5, 'ОК')
+        self.ui_5.pushButton_5.setStyleSheet("""
+                                             background-color: #d6dfff;
+                                             """)
+        set_text(self.ui_5.radioButton, 'Все записи')
+        set_text(self.ui_5.radioButton_2, 'По дате')
+
+    def set_enabled(self):
+        self.ui_5.dateEdit.setEnabled(True)
+
+    def set_disabled(self):
+        self.ui_5.dateEdit.setEnabled(False)
 
     def show_error_window(self, error):
         label = self.ui_7.findChildren(QLabel)
@@ -80,29 +103,19 @@ class SearchWindow(QtWidgets.QMainWindow):
     def get_patient_for_change(self):
         return self.ui_5.listView.currentIndex().data()
 
-    def add_combobox(self):
-        date_list = find_transfers_date()
-        combo_date_list = ['Все записи']
-
-        for element in date_list:
-            combo_date_list.append(element[0])
-
-        combo_date_list = set(combo_date_list)
-
-        for element in list(sorted(combo_date_list, reverse=True)):
-            self.ui_5.comboBox.addItem(element)
-
     def search_result(self):
         self.ui_5.listView.setEnabled(True)
         self.ui_5.listView.setStyleSheet("""
                                          background-color: #fff;
                                          """)
-        date = self.ui_5.comboBox.currentText()
+        date = self.ui_5.dateEdit.text()
 
-        if date == 'Все записи':
+        if self.ui_5.radioButton.isChecked():
             patients = find_all_patients()
         else:
             patients = find_patients(date)
+
+        patients = sorted(patients, reverse=True)
         patients_list = []
 
         for el in range(len(patients)):

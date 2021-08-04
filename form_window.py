@@ -6,13 +6,13 @@ from os import path
 from PyQt5 import QtWidgets, QtGui
 from ui.form_window import Ui_FormWindow
 from base import from_tuple_to_patients_table
-from static import set_text, set_title_font, set_date_format, validator, generate_unique_number, generate_filename
+from static import set_text, set_title_font, set_date_format, validator, generate_filename
 
 
 class FormWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(FormWindow, self).__init__()
-        self.setFixedSize(1260, 750)
+        self.setFixedSize(1172, 705)
         # Инициализация окна
         self.ui_2 = Ui_FormWindow()
         self.ui_2.setupUi(self)

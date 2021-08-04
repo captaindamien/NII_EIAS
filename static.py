@@ -6,7 +6,7 @@ from os import path
 
 config_dir = path.join(path.dirname(__file__), 'config')
 config = configparser.RawConfigParser()
-config.read(path.join(config_dir, 'config.ini'))
+config.read(path.join(config_dir, 'config.ini'), encoding='utf-8')
 
 
 def set_text(form, text):

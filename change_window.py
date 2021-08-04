@@ -10,7 +10,7 @@ from static import set_text, set_title_font, set_date_format, validator
 class ChangeWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(ChangeWindow, self).__init__()
-        self.setFixedSize(1260, 750)
+        self.setFixedSize(1172, 705)
         # Инициализация окна
         self.ui_2 = Ui_FormWindow()
         self.ui_2.setupUi(self)

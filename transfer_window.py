@@ -1,21 +1,25 @@
 import os
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtWidgets import QLabel, QAbstractItemView
 from ui.all_jsons import Ui_JsonsWindow
 import requests
 import json
 import configparser
 from static import set_text
+from time import sleep
 from base import find_transfers_date, find_transfer, success
 from static import generate_unique_number, get_organization
+from error_window import ErrorWindow
 
 
 class JsonsWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(JsonsWindow, self).__init__()
-        self.setFixedSize(362, 350)
+        self.setFixedSize(362, 375)
         # Инициализация окон
         self.ui_3 = Ui_JsonsWindow()
+        self.ui_7 = ErrorWindow()
         self.ui_3.setupUi(self)
         # Пути до папок
         self.result_dir = path.join(path.dirname(__file__), 'result')
@@ -27,7 +31,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
         self.files = os.listdir(self.result_dir)
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
-        self.config.read(path.join(self.config_dir, 'config.ini'))
+        self.config.read(path.join(self.config_dir, 'config.ini'), encoding='utf-8')
         # Берем имя организации для имени файла
         self.date = ''
         self.organization_name = get_organization()
@@ -35,6 +39,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
         self.model = QtCore.QStringListModel(self)
         self.refresh()
         self.ui_3.listView.setWordWrap(True)
+        # Запрет редактирования элементов listView
+        self.ui_3.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # Подключение кнопок
         self.ui_3.pushButton.clicked.connect(self.create_json)
         self.ui_3.pushButton_2.clicked.connect(self.close_window)
@@ -60,10 +66,22 @@ class JsonsWindow(QtWidgets.QMainWindow):
     def close_window(self):
         self.close()
 
+    def show_error_window(self, error):
+        label = self.ui_7.findChildren(QLabel)
+
+        for item in label:
+            item.setText(error)
+
+        self.ui_7.show()
+
     # Обновление списка
     def refresh(self):
+        # Прогрессбар
+        self.ui_3.progressBar.hide()
+
         date_list = find_transfers_date()
         combo_date_list = []
+
         for element in date_list:
             combo_date_list.append(element[0])
 
@@ -71,6 +89,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
         self.model.setStringList(sorted(combo_date_list, reverse=True))
         self.ui_3.listView.setModel(self.model)
+        self.ui_3.pushButton.setEnabled(True)
 
     def get_date_for_transfer(self):
         return self.ui_3.listView.currentIndex().data()
@@ -84,7 +103,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
             return python_json_data
 
     def read_json_today(self):
-        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8') as json_file:
+        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8')\
+                as json_file:
             json_data = json.load(json_file)
             python_json_data = json.loads(json_data)
 
@@ -133,10 +153,14 @@ class JsonsWindow(QtWidgets.QMainWindow):
         transfer_list = find_transfer(date)
 
         if not transfer_list:
-            python_json_dict['order']['patient']['surname'] = 'В базе '
-            python_json_dict['order']['patient']['name'] = 'нет пациентов '
+            python_json_dict['order']['patient']['surname'] = 'В базе'
+            python_json_dict['order']['patient']['name'] = 'нет пациентов'
             python_json_dict['order']['patient']['patronymic'] = 'для отправки'
             self.write_json(python_json_dict)
+
+        progress = 0
+        if transfer_list:
+            self.ui_3.progressBar.show()
 
         for el in range(len(transfer_list)):
             unique_number = generate_unique_number()
@@ -188,12 +212,17 @@ class JsonsWindow(QtWidgets.QMainWindow):
             python_json_dict['order']['patient']['address']['factAddress']['streetName'] = transfer_list[el][38]
 
             self.write_json(python_json_dict)
+            sleep(1)
+
+            progress += 100 / len(transfer_list)
+            self.ui_3.progressBar.setValue(progress)
 
         self.logging_transfer()
 
     def logging_transfer(self):
         # Открытие json файла
-        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8') as read_file:
+        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8')\
+                as read_file:
             json_file = json.load(read_file)
             python_json = json.loads(json_file)
 
@@ -209,13 +238,13 @@ class JsonsWindow(QtWidgets.QMainWindow):
         transfer_json = self.transfer_data()
         status_list = []
 
-        # Передача статусов в лог
-        with open(path.join(self.log_dir, 'console_log.txt'), 'a') as log_file:
-            log_file.write(f'{str(transfer_json)}\n\n')
+        # Передача статусов в лог, если json не пустой
+        if patient_list[0] != 'В базе нет пациентов для отправки':
+            with open(path.join(self.log_dir, 'console_log.txt'), 'a') as log_file:
+                log_file.write(f'{str(transfer_json)}\n\n')
 
         date = self.get_date_for_transfer()
         transfer_list = find_transfer(date)
-        print(transfer_list)
         # Добавление ошибок
         for elements in range(len(transfer_list)):
             if transfer_json['body'][int(elements)]['status'] == 'error':
@@ -237,6 +266,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
                 success(transfer_list[elem][0], 1)
 
         self.model.setStringList(patient_list)
+        self.ui_3.pushButton.setEnabled(False)
 
         if os.path.isfile(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
             os.remove(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'))
@@ -245,43 +275,48 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
     # Получение и отправка данных в API
     def transfer_data(self):
-        date = self.get_date_for_transfer()
-        organization_name = get_organization()
-        # Открытие json файла
-        with open(path.join(self.result_dir, f'{organization_name}-{date}.json'), 'r', encoding='utf-8') as read_file:
-            json_file = json.load(read_file)
+        try:
+            date = self.get_date_for_transfer()
+            organization_name = get_organization()
+            # Открытие json файла
+            with open(path.join(self.result_dir, f'{organization_name}-{date}.json'), 'r', encoding='utf-8') as read_file:
+                json_file = json.load(read_file)
 
-        depart_number = ''
-        token = ''
-        address = ''
-        # Чтение конфига
-        for section in self.config.sections():
-            if self.config.has_section('json_data'):
-                if self.config.has_option(section, 'depart_number'):
-                    depart_number = self.config.get(section, 'depart_number')
-            if self.config.has_section('transfer_data'):
-                if self.config.has_option(section, 'token') and self.config.has_option(section, 'address'):
-                    token = self.config.get(section, 'token')
-                    address = self.config.get(section, 'address')
+            depart_number = ''
+            token = ''
+            address = ''
+            # Чтение конфига
+            for section in self.config.sections():
+                if self.config.has_section('json_data'):
+                    if self.config.has_option(section, 'depart_number'):
+                        depart_number = self.config.get(section, 'depart_number')
+                if self.config.has_section('transfer_data'):
+                    if self.config.has_option(section, 'token') and self.config.has_option(section, 'address'):
+                        token = self.config.get(section, 'token')
+                        address = self.config.get(section, 'address')
 
-        login = {'depart number': depart_number,
-                 'token': token
-                 }
+            login = {'depart number': depart_number,
+                     'token': token
+                     }
 
-        # Получение нового токена
-        response = requests.post(f'https://{address}/api/v2/order/get-depart-token',
-                                 login)
+            # Получение нового токена
+            response = requests.post(f'https://{address}/api/v2/order/get-depart-token',
+                                     login)
 
-        response_json = response.json()
-        response_token = response_json['body']['token']
+            response_json = response.json()
+            response_token = response_json['body']['token']
 
-        # Отправка данных в api
-        transfer_info = {'depart number': depart_number,
-                         'token': response_token,
-                         'json': json_file}
+            # Отправка данных в api
+            transfer_info = {'depart number': depart_number,
+                             'token': response_token,
+                             'json': json_file}
 
-        transfer = requests.post(f'https://{address}/api/v2/order/ext-orders-package',
-                                 transfer_info)
-        transfer_json = transfer.json()
+            transfer = requests.post(f'https://{address}/api/v2/order/ext-orders-package',
+                                     transfer_info)
+            transfer_json = transfer.json()
 
-        return transfer_json
+            return transfer_json
+        # Обработка ConnectionError при отключенном Континент АП
+        except OSError:
+            self.show_error_window('Нет связи с сервером')
+            self.close_window()
