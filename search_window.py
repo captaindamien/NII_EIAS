@@ -52,7 +52,7 @@ class SearchWindow(QtWidgets.QMainWindow):
         self.ui_5.pushButton.setStyleSheet("""
                                            background-color: #b2edbf;
                                            """)
-        set_text(self.ui_5.pushButton_2, 'Отмена')
+        set_text(self.ui_5.pushButton_2, 'Закрыть')
         self.ui_5.pushButton_2.setStyleSheet("""
                                              background-color: #f7c8c8;
                                              """)

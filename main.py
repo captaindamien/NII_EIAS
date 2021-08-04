@@ -4,11 +4,11 @@ from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtGui import QIcon
 from ui.open_window import Ui_OpenWindow
 from form_window import FormWindow
-from transfer_window import JsonsWindow
+from transfer_window import TransferWindow
 from search_window import SearchWindow
 from about_us import AboutUs
 from static import set_text, set_title_font
-from PyQt5.QtWidgets import QComboBox, QLineEdit, QDateEdit
+from PyQt5.QtWidgets import QComboBox, QLineEdit, QDateEdit, QListView, QCalendarWidget, QPushButton
 import datetime
 
 
@@ -19,7 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Инициализация окон
         self.ui = Ui_OpenWindow()
         self.ui_2 = FormWindow()
-        self.ui_3 = JsonsWindow()
+        self.ui_3 = TransferWindow()
         self.ui_5 = SearchWindow()
         self.ui_8 = AboutUs()
         self.ui.setupUi(self)
@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Обработка нажатия для октрытия сторонних окон
     def init_handlers(self):
         self.ui.pushButton.clicked.connect(self.show_form_window)
-        self.ui.pushButton_3.clicked.connect(self.show_all_jsons_window)
+        self.ui.pushButton_3.clicked.connect(self.show_transfer_window)
         self.ui.pushButton_2.clicked.connect(self.show_search_window)
         self.ui.pushButton_5.clicked.connect(self.show_about_us)
 
@@ -74,7 +74,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui_2.show()
 
     # Открытие окна transfer_window
-    def show_all_jsons_window(self):
+    def show_transfer_window(self):
+        calendar = self.ui_3.findChildren(QCalendarWidget)
+        list_view = self.ui_3.findChildren(QListView)
+        buttons = self.ui_3.findChildren(QPushButton)
+
+        for cal in calendar:
+            cal.show()
+        for lst in list_view:
+            lst.hide()
+        for button in buttons:
+            button.setEnabled(True)
+
         self.ui_3.show()
 
     # Открытие окна просмотра / изменения

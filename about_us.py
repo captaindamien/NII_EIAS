@@ -1,5 +1,6 @@
 from os import path
 from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtCore import Qt
 from ui.about_us import Ui_AboutUs
 from static import set_text, set_title_font
 import configparser
@@ -36,4 +37,4 @@ class AboutUs(QtWidgets.QMainWindow):
                                   f'QA-инженер - Карпушин А.Е.\n\n'
                                   f'По всем интересующим вас вопросам можете обращаться на эл. почту'
                                   f' - karpushin@gkres.ru')
-        set_title_font(self.ui.label_3)
+        self.ui.label_3.setAlignment(Qt.AlignCenter)
