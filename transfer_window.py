@@ -2,23 +2,23 @@ import os
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QLabel, QAbstractItemView
-from ui.all_jsons import Ui_JsonsWindow
+from ui.transfer_window import Ui_TransferWindow
 import requests
 import json
 import configparser
 from static import set_text
 from time import sleep
-from base import find_transfers_date, find_transfer, success
+from base import find_transfer, success
 from static import generate_unique_number, get_organization
 from error_window import ErrorWindow
 
 
-class JsonsWindow(QtWidgets.QMainWindow):
+class TransferWindow(QtWidgets.QMainWindow):
     def __init__(self):
-        super(JsonsWindow, self).__init__()
-        self.setFixedSize(362, 375)
+        super(TransferWindow, self).__init__()
+        self.setFixedSize(482, 340)
         # Инициализация окон
-        self.ui_3 = Ui_JsonsWindow()
+        self.ui_3 = Ui_TransferWindow()
         self.ui_7 = ErrorWindow()
         self.ui_3.setupUi(self)
         # Пути до папок
@@ -37,29 +37,27 @@ class JsonsWindow(QtWidgets.QMainWindow):
         self.organization_name = get_organization()
         # Добавление списка в listView
         self.model = QtCore.QStringListModel(self)
-        self.refresh()
+        self.ui_3.listView.setModel(self.model)
         self.ui_3.listView.setWordWrap(True)
+        self.ui_3.listView.hide()
         # Запрет редактирования элементов listView
         self.ui_3.listView.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        # Прогрессбар
+        self.ui_3.progressBar.hide()
         # Подключение кнопок
         self.ui_3.pushButton.clicked.connect(self.create_json)
         self.ui_3.pushButton_2.clicked.connect(self.close_window)
-        self.ui_3.pushButton_3.clicked.connect(self.refresh)
         # Иконка окна
         self.setWindowIcon(QtGui.QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
         # Текст по окну
-        self.setWindowTitle('Выбор документа для отправки')
+        self.setWindowTitle('Выбор даты для отправки')
         set_text(self.ui_3.pushButton, 'Отправить')
         self.ui_3.pushButton.setStyleSheet("""
                                            background-color: #b2edbf;
                                            """)
-        set_text(self.ui_3.pushButton_2, 'Отмена')
+        set_text(self.ui_3.pushButton_2, 'Закрыть')
         self.ui_3.pushButton_2.setStyleSheet("""
                                              background-color: #f7c8c8;
-                                             """)
-        set_text(self.ui_3.pushButton_3, 'Обновить')
-        self.ui_3.pushButton_3.setStyleSheet("""
-                                             background-color: #d6dfff;
                                              """)
 
     # Закрытие окна
@@ -74,25 +72,9 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
         self.ui_7.show()
 
-    # Обновление списка
-    def refresh(self):
-        # Прогрессбар
-        self.ui_3.progressBar.hide()
-
-        date_list = find_transfers_date()
-        combo_date_list = []
-
-        for element in date_list:
-            combo_date_list.append(element[0])
-
-        combo_date_list = set(combo_date_list)
-
-        self.model.setStringList(sorted(combo_date_list, reverse=True))
-        self.ui_3.listView.setModel(self.model)
-        self.ui_3.pushButton.setEnabled(True)
-
     def get_date_for_transfer(self):
-        return self.ui_3.listView.currentIndex().data()
+        date = self.ui_3.calendarWidget.selectedDate()
+        return date.toString('dd-MM-yyyy')
 
     # Чтение json шаблона
     def read_json_template(self):
@@ -128,12 +110,14 @@ class JsonsWindow(QtWidgets.QMainWindow):
             json.dump(f"{python_json}", json_file, ensure_ascii=False)
 
     def create_json(self):
+        # Берет дату с календаря
         self.date += self.get_date_for_transfer()
 
         depart_number = ''
         laboratory_name = ''
         laboratory_ogrn = ''
 
+        # Чтение конфига
         for section in self.config.sections():
             if self.config.has_section('json_data'):
                 if self.config.has_option(section, 'depart_number')\
@@ -149,8 +133,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
             python_json_dict = self.read_json_template()
 
         python_json_dict = python_json_dict[0]
-        date = self.get_date_for_transfer()
-        transfer_list = find_transfer(date)
+
+        transfer_list = find_transfer(self.date)
 
         if not transfer_list:
             python_json_dict['order']['patient']['surname'] = 'В базе'
@@ -243,28 +227,31 @@ class JsonsWindow(QtWidgets.QMainWindow):
             with open(path.join(self.log_dir, 'console_log.txt'), 'a') as log_file:
                 log_file.write(f'{str(transfer_json)}\n\n')
 
-        date = self.get_date_for_transfer()
-        transfer_list = find_transfer(date)
+        transfer_list = find_transfer(self.date)
+
         # Добавление ошибок
         for elements in range(len(transfer_list)):
             if transfer_json['body'][int(elements)]['status'] == 'error':
                 # Вставка элементов в каждый 2
                 patient_list.insert(elements * 3 + 1, f"{transfer_json['body'][int(elements)]['message']}")
                 # Вставка элементов в каждый 3
-                patient_list.insert(elements * 3 + 2, '-----------------------------------------------')
-
+                patient_list.insert(elements * 3 + 2, '----------------------------------------------'
+                                                      '--------------------------')
                 status_list.append('error')
             elif transfer_json['body'][int(elements)]['status'] == 'ok'\
                     or transfer_json['body'][int(elements)]['status'] == '':
                 patient_list.insert(elements * 3 + 1, f"Успешно!")
-                patient_list.insert(elements * 3 + 2, '-----------------------------------------------')
-
+                patient_list.insert(elements * 3 + 2, '----------------------------------------------'
+                                                      '--------------------------')
                 status_list.append('ok')
 
         for elem in range(len(status_list)):
             if status_list[elem] == 'ok':
                 success(transfer_list[elem][0], 1)
 
+        # Скрывает календарь и показывает листвью
+        self.ui_3.calendarWidget.hide()
+        self.ui_3.listView.show()
         self.model.setStringList(patient_list)
         self.ui_3.pushButton.setEnabled(False)
 
@@ -279,7 +266,8 @@ class JsonsWindow(QtWidgets.QMainWindow):
             date = self.get_date_for_transfer()
             organization_name = get_organization()
             # Открытие json файла
-            with open(path.join(self.result_dir, f'{organization_name}-{date}.json'), 'r', encoding='utf-8') as read_file:
+            with open(path.join(self.result_dir, f'{organization_name}-{date}.json'), 'r', encoding='utf-8')\
+                    as read_file:
                 json_file = json.load(read_file)
 
             depart_number = ''
