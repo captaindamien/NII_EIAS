@@ -8,8 +8,8 @@ from transfer_window import JsonsWindow
 from search_window import SearchWindow
 from about_us import AboutUs
 from static import set_text, set_title_font
-from base import find_transfers_date
-from PyQt5.QtWidgets import QComboBox
+from PyQt5.QtWidgets import QComboBox, QLineEdit, QDateEdit
+import datetime
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -38,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         set_text(self.ui.pushButton_4, 'Импорт из эксель файла (Не доступно)')
         self.ui.pushButton_4.setEnabled(False)
         set_text(self.ui.pushButton_2, 'Просмотреть / Изменить ранее внесенные данные')
-        set_text(self.ui.pushButton_3, 'Отправить отчет в ЕИАС')
+        set_text(self.ui.pushButton_3, 'Отправить отчет в ФБУН ЦНИИ')
         self.ui.pushButton_3.setStyleSheet("""
                                            background-color: #b2edbf;
                                            """)
@@ -53,33 +53,30 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_2.clicked.connect(self.show_search_window)
         self.ui.pushButton_5.clicked.connect(self.show_about_us)
 
+    # Открытие окна "О проекте"
     def show_about_us(self):
         self.ui_8.show()
 
-    # Открытие окна конфигов
+    # Открытие окна форм
     def show_form_window(self):
+        line_edits = self.ui_2.findChildren(QLineEdit)
+        combo_boxes = self.ui_2.findChildren(QComboBox)
+        date_edits = self.ui_2.findChildren(QDateEdit)
+
+        # Очищение форм
+        for item in line_edits:
+            item.setText('')
+        for box in combo_boxes:
+            box.setCurrentIndex(0)
+        for date in date_edits:
+            date.setDate(datetime.datetime.now())
+
         self.ui_2.show()
 
+    # Открытие окна transfer_window
     def show_all_jsons_window(self):
         self.ui_3.show()
 
-    # Добавление элементов в comboBox окна search_window и отображение его
+    # Открытие окна просмотра / изменения
     def show_search_window(self):
-        date_list = find_transfers_date()
-        combo_date_list = ['Все записи']
-
-        for element in date_list:
-            combo_date_list.append(element[0])
-
-        combo_date_list = set(combo_date_list)
-
-        combo_boxes = self.ui_5.findChildren(QComboBox)
-
-        for item in combo_boxes:
-            item.clear()
-
-        for item in combo_boxes:
-            for element in list(sorted(combo_date_list, reverse=True)):
-                item.addItem(element)
-
         self.ui_5.show()

@@ -5,6 +5,7 @@ from ui.search_window import Ui_SearchWindow
 from error_window import ErrorWindow
 from base import find_patients, find_patient_info, find_patient_combobox_info, find_all_patients,\
     delete_patient
+import datetime
 from static import set_text
 from change_window import ChangeWindow
 
@@ -12,7 +13,7 @@ from change_window import ChangeWindow
 class SearchWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(SearchWindow, self).__init__()
-        self.setFixedSize(362, 440)
+        self.setFixedSize(362, 460)
         # Инициализация окон
         self.ui_5 = Ui_SearchWindow()
         self.ui_2 = ChangeWindow()
@@ -34,6 +35,15 @@ class SearchWindow(QtWidgets.QMainWindow):
         self.ui_5.pushButton_3.clicked.connect(self.delete_patient)
         self.ui_5.pushButton_4.clicked.connect(self.search_result)
         self.ui_5.pushButton_5.clicked.connect(self.close_window)
+        self.ui_5.radioButton.clicked.connect(self.set_disabled)
+        self.ui_5.radioButton_2.clicked.connect(self.set_enabled)
+        # Radiobutton
+        self.ui_5.radioButton.setChecked(True)
+        self.ui_5.dateEdit.setEnabled(False)
+        # DateEdit
+        self.ui_5.dateEdit.setCalendarPopup(True)
+        self.ui_5.dateEdit.setDate(datetime.datetime.now())
+        self.ui_5.dateEdit.setDisplayFormat("dd-MM-yyyy")
         # Текст по окну
         self.setWindowTitle('Просмотр пациентов в базе')
         self.setWindowIcon(QtGui.QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
@@ -58,6 +68,14 @@ class SearchWindow(QtWidgets.QMainWindow):
         self.ui_5.pushButton_5.setStyleSheet("""
                                              background-color: #d6dfff;
                                              """)
+        set_text(self.ui_5.radioButton, 'Все записи')
+        set_text(self.ui_5.radioButton_2, 'По дате')
+
+    def set_enabled(self):
+        self.ui_5.dateEdit.setEnabled(True)
+
+    def set_disabled(self):
+        self.ui_5.dateEdit.setEnabled(False)
 
     def show_error_window(self, error):
         label = self.ui_7.findChildren(QLabel)
@@ -90,9 +108,9 @@ class SearchWindow(QtWidgets.QMainWindow):
         self.ui_5.listView.setStyleSheet("""
                                          background-color: #fff;
                                          """)
-        date = self.ui_5.comboBox.currentText()
+        date = self.ui_5.dateEdit.text()
 
-        if date == 'Все записи':
+        if self.ui_5.radioButton.isChecked():
             patients = find_all_patients()
         else:
             patients = find_patients(date)

@@ -81,6 +81,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
 
         date_list = find_transfers_date()
         combo_date_list = []
+
         for element in date_list:
             combo_date_list.append(element[0])
 
@@ -315,6 +316,7 @@ class JsonsWindow(QtWidgets.QMainWindow):
             transfer_json = transfer.json()
 
             return transfer_json
+        # Обработка ConnectionError при отключенном Континент АП
         except OSError:
             self.show_error_window('Нет связи с сервером')
             self.close_window()
