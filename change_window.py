@@ -1,12 +1,10 @@
-import os
-import json
 import datetime
 import configparser
 from os import path
 from PyQt5 import QtWidgets, QtGui
 from ui.form_window import Ui_FormWindow
 from base import update_patient, find_user_id
-from static import set_text, set_title_font, set_date_format, validator, generate_filename
+from static import set_text, set_title_font, set_date_format, validator
 
 
 class ChangeWindow(QtWidgets.QMainWindow):

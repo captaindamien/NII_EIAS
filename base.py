@@ -41,7 +41,6 @@ def from_tuple_to_patients_table(patient_tuple):
                    "success)"
                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
                    "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", patient_tuple)
-
     connect.commit()
 
 
@@ -49,7 +48,6 @@ def from_tuple_to_patients_table(patient_tuple):
 def success(patient_id, data):
     sql = """UPDATE patients SET success = ? WHERE userid = ?"""
     cursor.execute(sql, (data, patient_id,))
-
     connect.commit()
 
 
@@ -79,9 +77,18 @@ def find_transfers_date():
 
 # Поиск ФИО пациентов по определенной дате
 def find_patients(date):
-    sql_select_query = """SELECT patient_surname, patient_name, patient_patronymic, patient_birthday FROM patients 
+    sql_select_query = """SELECT userid, patient_surname, patient_name, patient_patronymic, patient_birthday, success
+                          FROM patients 
                           WHERE date = ? """
     cursor.execute(sql_select_query, (date,))
+    return cursor.fetchall()
+
+
+# Поиск ФИО пациентов по определенной дате
+def find_all_patients():
+    sql_select_query = """SELECT userid, patient_surname, patient_name, patient_patronymic, patient_birthday, success
+                          FROM patients"""
+    cursor.execute(sql_select_query)
     return cursor.fetchall()
 
 
@@ -92,7 +99,7 @@ def find_transfer(date):
     return cursor.fetchall()
 
 
-def find_patient_info(surname, name, patronymic, birthday, date):
+def find_patient_info(userid, surname, name, patronymic, birthday):
     sql_select_query = """SELECT organization_name, organization_ogrn, order_date, service_code,
                        service_name, test_system, biomaterial_date, ready_date, result_value, patient_surname,
                        patient_name, patient_patronymic, patient_gender, patient_birthday, 
@@ -101,24 +108,24 @@ def find_patient_info(surname, name, patronymic, birthday, date):
                        registration_street, registration_house, registration_building, registration_apartment,
                        fact_region, fact_district, fact_town, fact_street, fact_house, fact_building, fact_apartment
                        FROM patients
-                       WHERE patient_surname = ? AND
+                       WHERE userid = ? AND
+                             patient_surname = ? AND
                              patient_name = ? AND
                              patient_patronymic = ? AND
-                             patient_birthday = ? AND
-                             date = ?"""
-    cursor.execute(sql_select_query, (surname, name, patronymic, birthday, date,))
+                             patient_birthday = ?"""
+    cursor.execute(sql_select_query, (userid, surname, name, patronymic, birthday,))
     return cursor.fetchall()
 
 
-def find_patient_combobox_info(surname, name, patronymic, birthday, date):
+def find_patient_combobox_info(userid, surname, name, patronymic, birthday):
     sql_select_query = """SELECT result, service_type, patient_document_type
                            FROM patients
-                           WHERE patient_surname = ? AND
+                           WHERE userid = ? AND
+                                 patient_surname = ? AND
                                  patient_name = ? AND
                                  patient_patronymic = ? AND
-                                 patient_birthday = ? AND
-                                 date = ?"""
-    cursor.execute(sql_select_query, (surname, name, patronymic, birthday, date,))
+                                 patient_birthday = ?"""
+    cursor.execute(sql_select_query, (userid, surname, name, patronymic, birthday,))
     return cursor.fetchall()
 
 
@@ -132,17 +139,22 @@ def update_patient(update_tuple):
     registration_house = ?, registration_region = ?, registration_building = ?, registration_district = ?,
     registration_apartment = ?, registration_street = ?, fact_town = ?, fact_house = ?, fact_region = ?,
     fact_building = ?, fact_district = ?, fact_apartment = ?, fact_street = ? WHERE userid = ?;"""
-
     cursor.execute(sqlite_update_query, update_tuple)
     connect.commit()
 
 
 def find_user_id(surname, name, patronymic, birthday):
     sql_select_query = """SELECT userid
-                           FROM patients
-                           WHERE patient_surname = ? AND
-                                 patient_name = ? AND
-                                 patient_patronymic = ? AND
-                                 patient_birthday = ?"""
+                          FROM patients
+                          WHERE patient_surname = ? AND
+                                patient_name = ? AND
+                                patient_patronymic = ? AND
+                                patient_birthday = ?"""
     cursor.execute(sql_select_query, (surname, name, patronymic, birthday,))
     return cursor.fetchall()
+
+
+def delete_patient(userid):
+    sqlite_update_query = """DELETE FROM patients WHERE userid = ?"""
+    cursor.execute(sqlite_update_query, (userid,))
+    connect.commit()

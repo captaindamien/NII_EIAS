@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_SearchWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(362, 423)
+        MainWindow.resize(362, 453)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.listView = QtWidgets.QListView(self.centralwidget)
@@ -27,7 +27,7 @@ class Ui_SearchWindow(object):
         self.pushButton_2.setGeometry(QtCore.QRect(280, 100, 75, 23))
         self.pushButton_2.setObjectName("pushButton_2")
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(10, 10, 47, 13))
+        self.label.setGeometry(QtCore.QRect(10, 10, 261, 16))
         self.label.setObjectName("label")
         self.comboBox = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox.setGeometry(QtCore.QRect(10, 30, 261, 22))
@@ -35,6 +35,9 @@ class Ui_SearchWindow(object):
         self.pushButton_4 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_4.setGeometry(QtCore.QRect(280, 30, 75, 23))
         self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(10, 390, 261, 23))
+        self.pushButton_3.setObjectName("pushButton_3")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 362, 21))
@@ -54,3 +57,4 @@ class Ui_SearchWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "PushButton"))
         self.label.setText(_translate("MainWindow", "TextLabel"))
         self.pushButton_4.setText(_translate("MainWindow", "PushButton"))
+        self.pushButton_3.setText(_translate("MainWindow", "PushButton"))
