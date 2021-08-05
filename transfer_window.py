@@ -2,6 +2,8 @@ import os
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QLabel, QAbstractItemView
+from pipenv.vendor.urllib3.exceptions import MaxRetryError
+
 from ui.transfer_window import Ui_TransferWindow
 import requests
 import json
@@ -305,6 +307,6 @@ class TransferWindow(QtWidgets.QMainWindow):
 
             return transfer_json
         # Обработка ConnectionError при отключенном Континент АП
-        except OSError:
+        except requests.exceptions.ConnectionError:
             self.show_error_window('Нет связи с сервером')
             self.close_window()
