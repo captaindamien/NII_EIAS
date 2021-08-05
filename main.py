@@ -33,7 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Отправка данных в ЕПГУ')
         set_text(self.ui.label, 'Внести данные пациента')
         set_title_font(self.ui.label)
-        set_text(self.ui.label_2, 'v.1.0.0')
+        set_text(self.ui.label_2, 'v.1.0.7')
         set_text(self.ui.pushButton, 'Заполнение формы')
         set_text(self.ui.pushButton_4, 'Импорт из эксель файла (Не доступно)')
         self.ui.pushButton_4.setEnabled(False)
