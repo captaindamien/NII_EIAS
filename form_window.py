@@ -7,7 +7,6 @@ from PyQt5 import QtWidgets, QtGui
 from ui.form_window import Ui_FormWindow
 from base import from_tuple_to_patients_table
 from static import set_text, set_title_font, set_date_format, validator, generate_filename
-from PyQt5.QtWidgets import QLineEdit
 
 
 class FormWindow(QtWidgets.QMainWindow):

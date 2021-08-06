@@ -33,7 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Отправка данных в ЕПГУ')
         set_text(self.ui.label, 'Внести данные пациента')
         set_title_font(self.ui.label)
-        set_text(self.ui.label_2, 'v.1.0.9')
+        set_text(self.ui.label_2, 'v.1.0.91')
         set_text(self.ui.pushButton, 'Заполнение формы')
         set_text(self.ui.pushButton_4, 'Импорт из эксель файла (Не доступно)')
         self.ui.pushButton_4.setEnabled(False)
@@ -66,7 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Очищение форм
         for item in line_edits:
             item.setText('')
-            validator(item, '[a-zA-Z0-9_@_а-щыэ-яА-ЩЫЭ-Я]+$')
+            validator(item, '[a-zA-Z0-9_@_а-щыэ-яА-ЩЫЭ-Я_\s]+$')
         for box in combo_boxes:
             box.setCurrentIndex(0)
         for date in date_edits:
