@@ -113,13 +113,10 @@ class FormWindow(QtWidgets.QMainWindow):
 
     # Валидации (Вызывается при нажатии кнопки в main.py)
     def validations(self):
-        validator(self.ui_2.lineEdit_11, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
-                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
+        validator(self.ui_2.lineEdit_11, "[0-9]{10}")  # 10 цифр номера телефона
         validator(self.ui_2.lineEdit_10, "(?:[1-2])")  # Пол
-        validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
-                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # СНИЛС
-        validator(self.ui_2.lineEdit_16, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
-                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # ОМС
+        validator(self.ui_2.lineEdit_15, "[0-9]{11}")  # СНИЛС
+        validator(self.ui_2.lineEdit_16, "[0-9]{16}")  # ОМС
 
     # Чтение json шаблона
     def read_json_template(self):
