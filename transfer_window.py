@@ -234,22 +234,25 @@ class TransferWindow(QtWidgets.QMainWindow):
 
         transfer_list = find_transfer(self.date)
 
-        # Добавление ошибок
         for elements in range(len(transfer_list)):
-            if transfer_json['body'][int(elements)]['status'] == 'error':
-                # Вставка элементов в каждый 2
-                patient_list.insert(elements * 3 + 1, f"{transfer_json['body'][int(elements)]['message']}")
-                # Вставка элементов в каждый 3
-                patient_list.insert(elements * 3 + 2, '----------------------------------------------'
-                                                      '--------------------------')
-                status_list.append('error')
-            elif transfer_json['body'][int(elements)]['status'] == 'ok'\
-                    or transfer_json['body'][int(elements)]['status'] == '':
-                patient_list.insert(elements * 3 + 1, f"Успешно!")
-                patient_list.insert(elements * 3 + 2, '----------------------------------------------'
-                                                      '--------------------------')
-                status_list.append('ok')
+            # Проверка на ответный json от сервера (иначе без Континент АП крашится)
+            if transfer_json:
+                # Добавление ошибок в список
+                if transfer_json['body'][int(elements)]['status'] == 'error':
+                    # Вставка элементов в каждый 2
+                    patient_list.insert(elements * 3 + 1, f"{transfer_json['body'][int(elements)]['message']}")
+                    # Вставка элементов в каждый 3
+                    patient_list.insert(elements * 3 + 2, '----------------------------------------------'
+                                                          '--------------------------')
+                    status_list.append('error')
+                elif transfer_json['body'][int(elements)]['status'] == 'ok'\
+                        or transfer_json['body'][int(elements)]['status'] == '':
+                    patient_list.insert(elements * 3 + 1, f"Успешно!")
+                    patient_list.insert(elements * 3 + 2, '----------------------------------------------'
+                                                          '--------------------------')
+                    status_list.append('ok')
 
+        # Пометка отправленных в БД
         for elem in range(len(status_list)):
             if status_list[elem] == 'ok':
                 success(transfer_list[elem][0], 1)
@@ -260,6 +263,7 @@ class TransferWindow(QtWidgets.QMainWindow):
         self.model.setStringList(patient_list)
         self.ui_3.pushButton.setEnabled(False)
 
+        # Итоговое удаление json файла
         if os.path.isfile(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
             os.remove(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'))
 
@@ -267,35 +271,34 @@ class TransferWindow(QtWidgets.QMainWindow):
 
     # Получение и отправка данных в API
     def transfer_data(self):
+        date = self.get_date_for_transfer()
+        organization_name = get_organization()
+        # Открытие json файла
+        with open(path.join(self.result_dir, f'{organization_name}-{date}.json'), 'r', encoding='utf-8')\
+                as read_file:
+            json_file = json.load(read_file)
+
+        depart_number = ''
+        token = ''
+        address = ''
+        # Чтение конфига
+        for section in self.config.sections():
+            if self.config.has_section('json_data'):
+                if self.config.has_option(section, 'depart_number'):
+                    depart_number = self.config.get(section, 'depart_number')
+            if self.config.has_section('transfer_data'):
+                if self.config.has_option(section, 'token') and self.config.has_option(section, 'address'):
+                    token = self.config.get(section, 'token')
+                    address = self.config.get(section, 'address')
+
+        login = {'depart number': depart_number,
+                 'token': token
+                 }
+
+        # Получение нового токена
         try:
-            date = self.get_date_for_transfer()
-            organization_name = get_organization()
-            # Открытие json файла
-            with open(path.join(self.result_dir, f'{organization_name}-{date}.json'), 'r', encoding='utf-8')\
-                    as read_file:
-                json_file = json.load(read_file)
-
-            depart_number = ''
-            token = ''
-            address = ''
-            # Чтение конфига
-            for section in self.config.sections():
-                if self.config.has_section('json_data'):
-                    if self.config.has_option(section, 'depart_number'):
-                        depart_number = self.config.get(section, 'depart_number')
-                if self.config.has_section('transfer_data'):
-                    if self.config.has_option(section, 'token') and self.config.has_option(section, 'address'):
-                        token = self.config.get(section, 'token')
-                        address = self.config.get(section, 'address')
-
-            login = {'depart number': depart_number,
-                     'token': token
-                     }
-
-            # Получение нового токена
             response = requests.post(f'https://{address}/api/v2/order/get-depart-token',
                                      login)
-
             response_json = response.json()
             response_token = response_json['body']['token']
 

@@ -78,6 +78,8 @@ class FormWindow(QtWidgets.QMainWindow):
         self.ui_2.comboBox_3.addItem('Свидетельство о рождении')
         self.ui_2.comboBox_3.addItem('Вид на жительство')
         self.ui_2.comboBox_3.addItem('Заграничный паспорт')
+        self.ui_2.comboBox_3.addItem('Паспорт иностр. гражданина')
+        self.ui_2.comboBox_3.addItem('Иной документ')
         set_text(self.ui_2.label_27, 'Серия документа удостоверяющего личность *')
         set_text(self.ui_2.label_25, 'Номер документа удостоверяющего личность *')
         set_text(self.ui_2.label_24, 'СНИЛС *')
