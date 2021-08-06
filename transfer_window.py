@@ -35,6 +35,11 @@ class TransferWindow(QtWidgets.QMainWindow):
         # Берем имя организации для имени файла
         self.date = ''
         self.organization_name = get_organization()
+        # Удаление всех файлов из result
+        for file in os.listdir(self.result_dir):
+            if not file.endswith(".json"):
+                continue
+            os.remove(os.path.join(self.result_dir, file))
         # Добавление списка в listView
         self.model = QtCore.QStringListModel(self)
         self.ui_3.listView.setModel(self.model)
