@@ -2,8 +2,6 @@ import os
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import QLabel, QAbstractItemView
-from pipenv.vendor.urllib3.exceptions import MaxRetryError
-
 from ui.transfer_window import Ui_TransferWindow
 import requests
 import json

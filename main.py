@@ -7,7 +7,7 @@ from form_window import FormWindow
 from transfer_window import TransferWindow
 from search_window import SearchWindow
 from about_us import AboutUs
-from static import set_text, set_title_font
+from static import set_text, set_title_font, validator
 from PyQt5.QtWidgets import QComboBox, QLineEdit, QDateEdit, QListView, QCalendarWidget, QPushButton
 import datetime
 
@@ -66,11 +66,13 @@ class MainWindow(QtWidgets.QMainWindow):
         # Очищение форм
         for item in line_edits:
             item.setText('')
+            validator(item, '[a-zA-Z0-9_@_а-щыэ-яА-ЩЫЭ-Я]+$')
         for box in combo_boxes:
             box.setCurrentIndex(0)
         for date in date_edits:
             date.setDate(datetime.datetime.now())
 
+        self.ui_2.validations()
         self.ui_2.show()
 
     # Открытие окна transfer_window

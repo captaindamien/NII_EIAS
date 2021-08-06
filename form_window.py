@@ -7,6 +7,7 @@ from PyQt5 import QtWidgets, QtGui
 from ui.form_window import Ui_FormWindow
 from base import from_tuple_to_patients_table
 from static import set_text, set_title_font, set_date_format, validator, generate_filename
+from PyQt5.QtWidgets import QLineEdit
 
 
 class FormWindow(QtWidgets.QMainWindow):
@@ -29,14 +30,6 @@ class FormWindow(QtWidgets.QMainWindow):
         # Привязка кнопок
         self.ui_2.pushButton.clicked.connect(self.from_form_to_json)
         self.ui_2.pushButton_3.clicked.connect(self.close_window)
-        # Валидации
-        validator(self.ui_2.lineEdit_11, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
-                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
-        validator(self.ui_2.lineEdit_10, "(?:[1-2])")  # Пол
-        validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
-                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # СНИЛС
-        validator(self.ui_2.lineEdit_16, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
-                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # ОМС
         # Формат даты
         set_date_format(self.ui_2.dateEdit)
         set_date_format(self.ui_2.dateEdit_2)
@@ -118,6 +111,16 @@ class FormWindow(QtWidgets.QMainWindow):
     # Закрытие окна
     def close_window(self):
         self.close()
+
+    # Валидации (Вызывается при нажатии кнопки в main.py)
+    def validations(self):
+        validator(self.ui_2.lineEdit_11, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # 10 цифр номера телефона
+        validator(self.ui_2.lineEdit_10, "(?:[1-2])")  # Пол
+        validator(self.ui_2.lineEdit_15, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # СНИЛС
+        validator(self.ui_2.lineEdit_16, "(?:[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]"
+                                         "?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9]?[0-9])")  # ОМС
 
     # Чтение json шаблона
     def read_json_template(self):
