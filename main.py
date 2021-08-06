@@ -66,7 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Очищение форм
         for item in line_edits:
             item.setText('')
-            validator(item, '[a-zA-Z0-9_@_а-щыэ-яА-ЩЫЭ-Я_\s]+$')
+            validator(item, '[a-zA-Z0-9_@_а-яА-Я_\s]+$')
         for box in combo_boxes:
             box.setCurrentIndex(0)
         for date in date_edits:
