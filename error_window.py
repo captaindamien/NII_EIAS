@@ -16,6 +16,6 @@ class ErrorWindow(QtWidgets.QMainWindow):
         # Иконка окна
         self.setWindowIcon(QtGui.QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
         # Текст по окну
-        self.setWindowTitle('Ошибка')
+        self.setWindowTitle(' ')
         set_text(self.ui_7.label, 'Ошибка')
         set_title_font(self.ui_7.label)

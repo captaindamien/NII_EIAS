@@ -10,6 +10,7 @@ from about_us import AboutUs
 from static import set_text, set_title_font, validator
 from PyQt5.QtWidgets import QComboBox, QLineEdit, QDateEdit, QListView, QCalendarWidget, QPushButton
 import datetime
+from excel_transfer import ExcelWindow
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -20,6 +21,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_OpenWindow()
         self.ui_2 = FormWindow()
         self.ui_3 = TransferWindow()
+        self.ui_4 = ExcelWindow()
         self.ui_5 = SearchWindow()
         self.ui_8 = AboutUs()
         self.ui.setupUi(self)
@@ -35,8 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         set_title_font(self.ui.label)
         set_text(self.ui.label_2, 'v.1.0.91')
         set_text(self.ui.pushButton, 'Заполнение формы')
-        set_text(self.ui.pushButton_4, 'Импорт из эксель файла (Не доступно)')
-        self.ui.pushButton_4.setEnabled(False)
+        set_text(self.ui.pushButton_4, 'Импорт из эксель файла')
         set_text(self.ui.pushButton_2, 'Просмотреть / Изменить ранее внесенные данные')
         set_text(self.ui.pushButton_3, 'Отправить отчет в ФБУН ЦНИИ')
         self.ui.pushButton_3.setStyleSheet("""
@@ -52,6 +53,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_3.clicked.connect(self.show_transfer_window)
         self.ui.pushButton_2.clicked.connect(self.show_search_window)
         self.ui.pushButton_5.clicked.connect(self.show_about_us)
+        self.ui.pushButton_4.clicked.connect(self.show_excel_window)
+
+    def show_excel_window(self):
+        self.ui_4.refresh()
+
+        self.ui_4.show()
 
     # Открытие окна "О проекте"
     def show_about_us(self):

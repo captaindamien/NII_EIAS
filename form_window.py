@@ -120,40 +120,6 @@ class FormWindow(QtWidgets.QMainWindow):
         validator(self.ui_2.lineEdit_15, "[0-9]{11}")  # СНИЛС
         validator(self.ui_2.lineEdit_16, "[0-9]{16}")  # ОМС
 
-    # Чтение json шаблона
-    def read_json_template(self):
-        with open(path.join(self.json_dir, 'template.json'), 'r', encoding='utf-8') as json_file:
-            json_data = json.load(json_file)
-            python_json_data = json.loads(json_data)
-
-            return python_json_data
-
-    def read_json_today(self):
-        filename = generate_filename()
-        with open(path.join(self.result_dir, f'{filename}.json'), 'r', encoding='utf-8') as json_file:
-            json_data = json.load(json_file)
-            python_json_data = json.loads(json_data)
-
-            return python_json_data
-
-    # Создание и запись json файла
-    def write_json(self, data):
-        filename = generate_filename()
-
-        if os.path.exists(path.join(self.result_dir, f'{filename}.json')):
-            json_list = self.read_json_today()
-        else:
-            json_list = self.read_json_template()
-
-        with open(path.join(self.result_dir, f'{filename}.json'), 'w', encoding='utf-8') as json_file:
-            if json_list[0]['order']['depart'] != '':
-                json_list.append(data)
-            else:
-                json_list = [data]
-            python_json = str(json_list).replace("'", '\"')  # Преобразует ковычки к нужному формату
-
-            json.dump(f"{python_json}", json_file, ensure_ascii=False)
-
     # Передача формы в json
     def from_form_to_json(self):
         organization_name = self.ui_2.lineEdit.text()
