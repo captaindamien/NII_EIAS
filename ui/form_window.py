@@ -370,7 +370,8 @@ class Ui_FormWindow(object):
         self.label_29.setText(_translate("MainWindow", "TextLabel"))
         self.label_30.setText(_translate("MainWindow", "TextLabel"))
         self.label_31.setText(_translate("MainWindow", "TextLabel"))
-        self.label_28.setText(_translate("MainWindow", "Поля со знаком * обязательны к заполнению"))
+        self.label_28.setText(_translate("MainWindow", "Поля со знаком * обязательны к заполнению. Дата имеет формат: "
+                                                       "ГГГГ-ММ-ДД"))
         self.label_29.setText(_translate("MainWindow", "Ковычки не допустимы. Формы заполняются по типу: ФБУЗ ЦГиЭ"))
         self.label_30.setText(_translate("MainWindow", "В поле ЗНАЧЕНИЕ РЕЗУЛЬТАТА вносится числовое значение"))
         self.label_31.setText(_translate("MainWindow", "Портал Госуслуги рекомендует в качестве приоритетного"
