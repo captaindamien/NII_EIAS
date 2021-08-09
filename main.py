@@ -1,8 +1,9 @@
+import os
 from os import path
 from PyQt5.QtCore import QSize
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtGui import QIcon
-from ui.open_window import Ui_OpenWindow
+from ui.main_window import Ui_OpenWindow
 from form_window import FormWindow
 from transfer_window import TransferWindow
 from search_window import SearchWindow
@@ -13,10 +14,20 @@ import datetime
 from excel_transfer import ExcelWindow
 
 
+# Открытие .docx файла с инструкцией
+def show_instructions():
+    os.system(f'start {path.join(path.dirname(__file__), "README.docx")}')
+
+
+# Открытие .docx файла с планами на будущее
+def show_roadmap():
+    os.system(f'start {path.join(path.dirname(__file__), "Roadmap.docx")}')
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setFixedSize(521, 310)
+        self.setFixedSize(521, 300)
         # Инициализация окон
         self.ui = Ui_OpenWindow()
         self.ui_2 = FormWindow()
@@ -35,17 +46,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Отправка данных в ЕПГУ')
         set_text(self.ui.label, 'Внести данные пациента')
         set_title_font(self.ui.label)
-        set_text(self.ui.label_2, 'v.1.0.91')
+        set_text(self.ui.label_2, 'v.1.1.0')
         set_text(self.ui.pushButton, 'Заполнение формы')
-        set_text(self.ui.pushButton_4, 'Импорт из эксель файла')
-        set_text(self.ui.pushButton_2, 'Просмотреть / Изменить ранее внесенные данные')
-        set_text(self.ui.pushButton_3, 'Отправить отчет в ФБУН ЦНИИ')
+        set_text(self.ui.pushButton_4, 'Импорт из Excel')
+        set_text(self.ui.pushButton_2, 'Просмотреть / Изменить данные')
+        set_text(self.ui.pushButton_3, 'Отправить данные в ФБУН ЦНИИ')
         self.ui.pushButton_3.setStyleSheet("""
                                            background-color: #b2edbf;
                                            """)
         self.ui.pushButton_3.setIcon(QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
         self.ui.pushButton_3.setIconSize(QSize(35, 35))
         set_text(self.ui.pushButton_5, 'О проекте')
+        set_text(self.ui.pushButton_6, 'Экспорт в Excel (Скоро)')
+        self.ui.pushButton_6.setEnabled(False)
+        # set_text(self.ui.pushButton_7, 'Roadmap')
+        # set_text(self.ui.pushButton_8, 'Инструкция')
 
     # Обработка нажатия для октрытия сторонних окон
     def init_handlers(self):
@@ -54,10 +69,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_2.clicked.connect(self.show_search_window)
         self.ui.pushButton_5.clicked.connect(self.show_about_us)
         self.ui.pushButton_4.clicked.connect(self.show_excel_window)
+        # self.ui.pushButton_7.clicked.connect(show_roadmap)
+        # self.ui.pushButton_8.clicked.connect(show_instructions)
 
+    # Открытие окна excel_window
     def show_excel_window(self):
-        self.ui_4.refresh()
-
+        self.ui_4.refresh()  # Собирает данные с экселя
         self.ui_4.show()
 
     # Открытие окна "О проекте"
