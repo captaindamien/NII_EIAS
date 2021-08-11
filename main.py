@@ -9,7 +9,7 @@ from transfer_window import TransferWindow
 from search_window import SearchWindow
 from about_us import AboutUs
 from static import set_text, set_title_font, validator
-from PyQt5.QtWidgets import QComboBox, QLineEdit, QDateEdit, QListView, QCalendarWidget, QPushButton
+from PyQt5.QtWidgets import QComboBox, QLineEdit, QDateEdit, QListView, QCalendarWidget, QPushButton, QProgressBar
 import datetime
 from excel_transfer import ExcelWindow
 
@@ -101,9 +101,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Открытие окна transfer_window
     def show_transfer_window(self):
+        self.ui_3.delete_files()
+
         calendar = self.ui_3.findChildren(QCalendarWidget)
         list_view = self.ui_3.findChildren(QListView)
         buttons = self.ui_3.findChildren(QPushButton)
+        progress_bar = self.ui_3.findChildren(QProgressBar)
 
         for cal in calendar:
             cal.show()
@@ -111,6 +114,8 @@ class MainWindow(QtWidgets.QMainWindow):
             lst.hide()
         for button in buttons:
             button.setEnabled(True)
+        for pb in progress_bar:
+            pb.hide()
 
         self.ui_3.show()
 

@@ -26,12 +26,9 @@ class ExcelWindow(QtWidgets.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(path.join(self.img_dir, 'gosuslugi_5.png')))
         # Оглавление окна
         self.setWindowTitle('Перенос информации о пациентах из Excel в базу данных')
-        # Инициализация таблицы
-        self.grid_layout = QGridLayout()
-        self.ui.tableWidget.setLayout(self.grid_layout)
-        self.table = QTableWidget(self)
-        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # Переменные для данных из экселя
+        self.table = QTableWidget(self)
+        self.grid_layout = QGridLayout()
         self.headers = []
         self.data = {}
         self.init_handlers()
@@ -101,6 +98,9 @@ class ExcelWindow(QtWidgets.QMainWindow):
 
     # Заполнение таблицы
     def refresh(self):
+        # Инициализация таблицы
+        self.ui.tableWidget.setLayout(self.grid_layout)
+        self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # Функция на чтение экселя
         self.read_excel()
         # Кол-во строк и колонок для отрисовки таблицы

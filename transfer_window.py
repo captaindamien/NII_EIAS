@@ -1,7 +1,7 @@
 import os
 from os import path
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtWidgets import QLabel, QAbstractItemView, QProgressBar
+from PyQt5.QtWidgets import QLabel, QAbstractItemView
 from ui.transfer_window import Ui_TransferWindow
 import requests
 import json
@@ -27,20 +27,12 @@ class TransferWindow(QtWidgets.QMainWindow):
         self.config_dir = path.join(path.dirname(__file__), 'config')
         self.json_dir = path.join(path.dirname(__file__), 'json')
         self.log_dir = path.join(path.dirname(__file__), 'log')
-        # Список всех файлов в папке result
-        self.files = os.listdir(self.result_dir)
         # Открытие файла конфига
         self.config = configparser.RawConfigParser()
         self.config.read(path.join(self.config_dir, 'config.ini'), encoding='utf-8')
         # Берем имя организации для имени файла
         self.date = ''
         self.organization_name = get_organization()
-        # Удаление всех файлов из result
-        for file in os.listdir(self.result_dir):
-            if not file.endswith(".json"):
-                continue
-            os.remove(os.path.join(self.result_dir, file))
-        # Добавление списка в listView
         self.model = QtCore.QStringListModel(self)
         self.ui_3.listView.setModel(self.model)
         self.ui_3.listView.setWordWrap(True)
@@ -69,6 +61,13 @@ class TransferWindow(QtWidgets.QMainWindow):
     def close_window(self):
         self.close()
 
+    # Удаление всех файлов из result
+    def delete_files(self):
+        for file in os.listdir(self.result_dir):
+            if not file.endswith(".json"):
+                continue
+            os.remove(os.path.join(self.result_dir, file))
+
     def show_error_window(self, error):
         label = self.ui_7.findChildren(QLabel)
 
@@ -83,36 +82,45 @@ class TransferWindow(QtWidgets.QMainWindow):
 
     # Чтение json шаблона
     def read_json_template(self):
-        with open(path.join(self.json_dir, 'template.json'), 'r', encoding='utf-8') as json_file:
-            json_data = json.load(json_file)
-            python_json_data = json.loads(json_data)
+        try:
+            with open(path.join(self.json_dir, 'template.json'), 'r', encoding='utf-8') as json_file:
+                json_data = json.load(json_file)
+                python_json_data = json.loads(json_data)
 
-            return python_json_data
+                return python_json_data
+        except ValueError:
+            return
 
     def read_json_today(self):
-        with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8')\
-                as json_file:
-            json_data = json.load(json_file)
-            python_json_data = json.loads(json_data)
+        try:
+            with open(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json'), 'r', encoding='utf-8')\
+                    as json_file:
+                json_data = json.load(json_file)
+                python_json_data = json.loads(json_data)
 
-            return python_json_data
+                return python_json_data
+        except ValueError:
+            return
 
     # Создание и запись json файла
     def write_json(self, data):
-        if os.path.exists(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
-            json_list = self.read_json_today()
-        else:
-            json_list = self.read_json_template()
-
-        with open(path.join(self.result_dir,
-                            f'{self.organization_name}-{self.date}.json'), 'w', encoding='utf-8') as json_file:
-            if json_list[0]['order']['depart'] != '':
-                json_list.append(data)
+        try:
+            if os.path.exists(path.join(self.result_dir, f'{self.organization_name}-{self.date}.json')):
+                json_list = self.read_json_today()
             else:
-                json_list = [data]
-            python_json = str(json_list).replace("'", '\"')  # Преобразует ковычки к нужному формату
+                json_list = self.read_json_template()
 
-            json.dump(f"{python_json}", json_file, ensure_ascii=False)
+            with open(path.join(self.result_dir,
+                                f'{self.organization_name}-{self.date}.json'), 'w', encoding='utf-8') as json_file:
+                if json_list[0]['order']['depart'] != '':
+                    json_list.append(data)
+                else:
+                    json_list = [data]
+                python_json = str(json_list).replace("'", '\"')  # Преобразует ковычки к нужному формату
+
+                json.dump(f"{python_json}", json_file, ensure_ascii=False)
+        except TypeError:
+            raise IndexError()
 
     def create_json(self):
         # Берет дату с календаря
@@ -200,8 +208,16 @@ class TransferWindow(QtWidgets.QMainWindow):
             python_json_dict['order']['patient']['address']['factAddress']['appartament'] = transfer_list[el][37]
             python_json_dict['order']['patient']['address']['factAddress']['streetName'] = transfer_list[el][38]
 
-            self.write_json(python_json_dict)
-            sleep(1)
+            try:
+                self.write_json(python_json_dict)
+            except IndexError:
+                self.close_window()
+                self.date = ''
+                self.show_error_window(f'Ошибка отправки.\nПациент - '
+                                       f'{transfer_list[el-1][13]} {transfer_list[el-1][14]} {transfer_list[el-1][15]}')
+                return
+            # Замедление процесса для возможности слежения за процессом пользователю :)
+            sleep(0.02)
 
             progress += 100 / len(transfer_list)
             self.ui_3.progressBar.setValue(progress)

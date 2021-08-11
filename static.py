@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt, QRegExp
 from PyQt5.QtGui import QRegExpValidator
 import configparser
 from os import path
+from random import randint
 
 config_dir = path.join(path.dirname(__file__), 'config')
 config = configparser.RawConfigParser()
@@ -42,7 +43,8 @@ def get_organization():
 
 def generate_unique_number():
     name = get_organization()
-    return f'{name}-{datetime.datetime.now().strftime("%d-%m-%Y, %H-%M-%S")}'
+    rand_int = randint(1, 9)
+    return f'{name}-{datetime.datetime.now().strftime("%d-%m,%H-%M-%S")}-{rand_int}{rand_int}{rand_int}'
 
 
 def generate_filename():
