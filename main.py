@@ -121,4 +121,5 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # Открытие окна просмотра / изменения
     def show_search_window(self):
+        self.ui_5.refresh()
         self.ui_5.show()

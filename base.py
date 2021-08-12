@@ -77,7 +77,7 @@ def find_transfers_date():
 
 # Поиск ФИО пациентов по определенной дате (Запрос из приложения)
 def find_patients(date):
-    sql_select_query = """SELECT userid, patient_surname, patient_name, patient_patronymic, patient_birthday, success
+    sql_select_query = """SELECT date, patient_surname, patient_name, patient_patronymic, patient_birthday, success
                           FROM patients 
                           WHERE date = ? """
     cursor.execute(sql_select_query, (date,))
@@ -86,7 +86,7 @@ def find_patients(date):
 
 # Поиск ФИО пациентов по определенной дате (Запрос из приложения)
 def find_all_patients():
-    sql_select_query = """SELECT userid, patient_surname, patient_name, patient_patronymic, patient_birthday, success
+    sql_select_query = """SELECT date, patient_surname, patient_name, patient_patronymic, patient_birthday, success
                           FROM patients"""
     cursor.execute(sql_select_query)
     return cursor.fetchall()
